@@ -37,7 +37,7 @@ O pacote oferece diversas funções para facilitar a manipulação de dados, inc
 
 ## Documentação
 
-Para documentação completa e exemplos de uso, consulte o [GitHub do projeto](https://github.com/seu-usuario/fbpyutils-db).
+Para documentação completa e exemplos de uso, consulte o [GitHub do projeto](https://github.com/fcjbispo/fbpyutils-db).
 
 ## Licença
 
