@@ -1,0 +1,18 @@
+[project]
+name = "fbpyutils-db"
+version = "0.1.0"
+description = "Francisco Bispo's utilities for DB"
+readme = "README.md"
+authors = [
+    { name = "Francisco C J Bispo", email = "fcjbispo@gmail.com" }
+]
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "pandas",
+    "numpy",
+    "sqlalchemy"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
