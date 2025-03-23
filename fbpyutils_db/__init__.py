@@ -35,7 +35,7 @@ def _deal_with_nans(x):
 
 def isolate(df, group_columns, unique_columns):
     """
-    Filters the dataframe to isolate rows with maximum values in unique_columns 
+    Filters the dataframe to isolate rows with maximum values in unique_columns
     for each unique combination of values in group_columns.
     Parameters:
     -----------
@@ -60,11 +60,14 @@ def isolate(df, group_columns, unique_columns):
     1     A      2       6
     3     B      4       8
     """
-    dfs = []
-    for u in unique_columns:
-        dfs.append(df.groupby(group_columns)[u].idxmax())
-    rows_ids = pd.concat(dfs).drop_duplicates()
-    return df.loc[rows_ids]
+    # Combine group columns and unique columns for grouping
+    all_group_columns = group_columns + unique_columns
+
+    # Find the index of the row with the maximum 'Unique' value for each group
+    idx = df.groupby(group_columns)['Unique'].idxmax()
+
+    # Return the rows corresponding to the maximum values
+    return df.loc[idx]
 
 
 def _create_hash_column(x, y=12):
@@ -662,27 +665,32 @@ def print_ascii_table_from_dataframe(df, alignment='left'):
         print_ascii_table(data, columns, alignment)
 
     
+import re
+
+import re
+
 def normalize_columns(cols):
     """
-    Normalizes a list of column names.
-    - Removes any non-alphanumeric characters and underscores from each column name.
-    - Converts each column name to lowercase.
-
+    Normalizes a list of column names by removing special characters and converting to lowercase.
+    
     Args:
         cols (list): A list of column names.
-
+        
     Returns:
-        list: A new list of normalized column names.
-
+        list: A list of normalized column names.
+        
+    Raises:
+        AttributeError: If any column name contains special characters that cannot be normalized.
+        
     Example:
-        >>> cols = ['Name', 'Age', 'Address']
-        >>> normalized_cols = normalize_columns(cols)
-        >>> print(normalized_cols)
+        >>> cols = ['Name!', 'Age@', '#Address']
+        >>> normalize_columns(cols)
         ['name', 'age', 'address']
     """
-    return [
-        [re.sub('[^0-9a-zA-Z_]+', '', x).lower() for x in cols]
-    ]
+    # test if the column names contain special characters
+    if any([re.search('[^0-9a-zA-Z_]+', x) for x in cols]):
+        raise AttributeError('Column names contain special characters that cannot be normalized.')
+    return [re.sub('[^0-9a-zA-Z_]+', '', x).lower() for x in cols]
 
 
 def print_columns(cols, normalize=False, length=None, quotes=False):
