@@ -21,6 +21,9 @@ This project provides a collection of Python utility functions focused on databa
 
 Detailed documentation is available within the source code docstrings. For project overview and updates, refer to the [project's GitHub repository](https://github.com/fcjbispo/fbpyutils-db).
 
+For detailed function documentation, see [DOC.md](DOC.md).
+To track the implementation and testing status of features, see [TODO.md](TODO.md).
+
 ## License
 
 [MIT] (License)
