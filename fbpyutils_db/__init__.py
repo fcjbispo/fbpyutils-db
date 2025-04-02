@@ -1,23 +1,39 @@
-'''
+"""
 Utility functions to manipulate data, tables and dataframes.
-'''
+"""
+
+import re
+from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
 import numpy as np
-from sqlalchemy import inspect, MetaData, Table, Column, Integer, String, Float, DateTime, Boolean, text, Index
+from sqlalchemy import (
+    Engine,
+    Selectable,
+    inspect,
+    MetaData,
+    Table,
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    Boolean,
+    text,
+    Index,
+)
 from sqlalchemy.sql.sqltypes import TypeEngine
 from sqlalchemy.sql import exists
 from datetime import datetime, date
 import hashlib
-import re
 
 
-def _deal_with_nans(x):
+def _deal_with_nans(x: Any) -> Any:
     """
     This function handles null values and data types within a given input `x`. It checks if the input is a NaN value, None, an empty string, or a datetime/date with a NaT (not a time) value, and returns None for these cases. For other numeric types like float or int, it checks if the value is actually NaN. For datetime/date types, it checks if the value is a NaT value. If the input is of any other type, it returns the input as-is.
-    
+
     Parameters:
     x (any): The input variable that may contain null values or special cases that need to be handled.
-    
+
     Returns:
     The function returns `None` if the input is NaN, None, an empty string, a datetime with NaT, or a date with NaT. Otherwise, it returns the original input value.
     """
@@ -32,7 +48,7 @@ def _deal_with_nans(x):
     return x
 
 
-def isolate(df, group_columns, unique_columns):
+def isolate(df: pd.DataFrame, group_columns: List[str]):
     """
     Filters the dataframe to isolate rows with maximum values in unique_columns
     for each unique combination of values in group_columns.
@@ -42,8 +58,6 @@ def isolate(df, group_columns, unique_columns):
         The input pandas dataframe.
     group_columns : list
         A list of column names used for grouping the dataframe.
-    unique_columns : list
-        A list of column names for which the maximum values are calculated.
     Returns:
     --------
     pd.DataFrame
@@ -59,33 +73,30 @@ def isolate(df, group_columns, unique_columns):
     1     A      2       6
     3     B      4       8
     """
-    # Combine group columns and unique columns for grouping
-    all_group_columns = group_columns + unique_columns
-
     # Find the index of the row with the maximum 'Unique' value for each group
-    idx = df.groupby(group_columns)['Unique'].idxmax()
+    idx = df.groupby(group_columns)["Unique"].idxmax()
 
     # Return the rows corresponding to the maximum values
     return df.loc[idx]
 
 
-def _create_hash_column(x, y=12):
+def _create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
     """
     Creates a new hash column based on the values of an existing column in the dataframe.
     The hash is generated using MD5 and truncated to 'y' number of characters.
-    
+
     Parameters:
     ----------
     x : str or pd.Series
         The column from the dataframe whose values will be hashed.
     y : int, optional (default=12)
         The length of the hash string to return.
-        
+
     Returns:
     -------
     pd.Series
         A new pandas Series containing the MD5 hash of the input column values.
-    
+
     Example:
     --------
     >>> df = pd.DataFrame({'SomeColumn': ['value1', 'value2']})
@@ -93,19 +104,21 @@ def _create_hash_column(x, y=12):
     0    b'f96b61d7...a3f8b1cdd'
     1    b'f96b61d7...a3f8b1cde'
     """
-    return x.apply(lambda value: hashlib.md5(str(value).encode()).hexdigest()[:y], axis=1)
+    return x.apply(
+        lambda value: hashlib.md5(str(value).encode()).hexdigest()[:y], axis=1
+    )
 
 
-def _check_columns(df, columns):
+def _check_columns(df: pd.DataFrame, columns: List[str]) -> bool:
     """Checks if all the specified columns exist in the dataframe.
-    
+
     Parameters:
     df (pd.DataFrame): The dataframe to check column existence in.
     columns (list): A list of column names to check for existence.
-    
+
     Returns:
     bool: True if all columns exist, False otherwise.
-    
+
     Example:
     >>> df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
     >>> _check_columns(df, ['A', 'C'])
@@ -118,7 +131,9 @@ def _check_columns(df, columns):
     return all(c in df.columns for c in columns)
 
 
-def add_hash_column(df, column_name, length=12, columns=[]):
+def add_hash_column(
+    df: pd.DataFrame, column_name: str, length: int = 12, columns: List[str] = []
+) -> pd.DataFrame:
     """
     Adds a hash column to the given DataFrame.
 
@@ -144,7 +159,7 @@ def add_hash_column(df, column_name, length=12, columns=[]):
     if columns and type(columns) != list:
         raise ValueError("When given, columns must be a list of column names")
     if columns and not _check_columns(df, columns):
-        raise ValueError('When given, all column names should exist in the dataframe.')
+        raise ValueError("When given, all column names should exist in the dataframe.")
     # Creates the hash column
     if columns:
         xdf = df[columns].copy()
@@ -155,7 +170,9 @@ def add_hash_column(df, column_name, length=12, columns=[]):
     return df[xcolumns].copy()
 
 
-def add_hash_index(df, index_name='id', length=12, columns=[]):
+def add_hash_index(
+    df: pd.DataFrame, index_name: str = "id", length: int = 12, columns: List[str] = []
+) -> pd.DataFrame:
     """
     Replaces the dataframe index with a hash string with length of 12 characters
     calculated using all columns values for each row and renames the dataframe index
@@ -180,7 +197,7 @@ def add_hash_index(df, index_name='id', length=12, columns=[]):
     >>> df = pd.DataFrame({'col1': [1, 2, 3], 'col2': ['a', 'b', 'c']})
     >>> add_hash_index(df, 'new_index')
                col1 col2
-    new_index          
+    new_index
     8b9c45e2a9f6   1   a
     3d4c4f4f4d1f   2   b
     5b5d8c7a2a4c   3   c
@@ -197,7 +214,7 @@ def add_hash_index(df, index_name='id', length=12, columns=[]):
     if columns and type(columns) != list:
         raise ValueError("When given, columns must be a list of column names")
     if columns and not _check_columns(df, columns):
-        raise ValueError('When given, all column names should exist in the dataframe.')
+        raise ValueError("When given, all column names should exist in the dataframe.")
     # Creates the hash column
     if columns:
         xdf = df[columns].copy()
@@ -211,7 +228,16 @@ def add_hash_index(df, index_name='id', length=12, columns=[]):
     return df
 
 
-def table_operation(operation, dataframe, engine, table_name, schema=None, keys=None, index=None, commit_at=50):
+def table_operation(
+    operation: str,
+    dataframe: pd.DataFrame,
+    engine: Engine,
+    table_name: str,
+    schema: str = None,
+    keys: list[str] = None,
+    index: str = None,
+    commit_at: int = 50,
+) -> Dict[str, Any]:
     """
     Perform upsert or replace operation on a table based on the provided dataframe.
 
@@ -224,7 +250,7 @@ def table_operation(operation, dataframe, engine, table_name, schema=None, keys=
         keys (list of str, optional for operation=replace): List of column names to use as keys for upsert operation.
         index (str, optional): Whether to create an index and what kind using the keys. Default is None (not create index).
             If an index must be created, index be in 'standard' or 'unique'.
-        commit_at (int, optional): Number of rows to commit in the database at once. Defaults to 50. 
+        commit_at (int, optional): Number of rows to commit in the database at once. Defaults to 50.
             Must be > 1 and < total rows of the dataframe.
 
     Returns:
@@ -232,24 +258,26 @@ def table_operation(operation, dataframe, engine, table_name, schema=None, keys=
 
     """
     # Check parameters
-    if operation not in ('append', 'upsert', 'replace'):
+    if operation not in ("append", "upsert", "replace"):
         raise ValueError("Invalid operation. Valid values: append|upsert|replace.")
-    
+
     if not type(dataframe) == pd.DataFrame:
         raise ValueError("Dataframe must be a Pandas DataFrame.")
-    
-    if operation == 'upsert' and not keys:
+
+    if operation == "upsert" and not keys:
         raise ValueError("For upsert operation 'keys' parameter is mandatory.")
-    
+
     if keys and not type(keys) == list:
         raise ValueError("Parameters 'keys' must be a list of str.")
-    
-    if (keys and index) and index not in ('standard', 'unique', 'primary'):
-        raise ValueError("If an index will be created, it must be any of standard|unique|primary.")
-    
+
+    if (keys and index) and index not in ("standard", "unique", "primary"):
+        raise ValueError(
+            "If an index will be created, it must be any of standard|unique|primary."
+        )
+
     commit_at = commit_at or 50
     if not type(commit_at) == int or (commit_at < 1 and commit_at > len(dataframe)):
-        raise ValueError('Commit At must be > 1 and < total rows of DataFrame.')
+        raise ValueError("Commit At must be > 1 and < total rows of DataFrame.")
 
     # Check if the table exists in the database, if not create it
     if not inspect(engine).has_table(table_name, schema=schema):
@@ -262,46 +290,61 @@ def table_operation(operation, dataframe, engine, table_name, schema=None, keys=
     # Initialize reports for insertions, updates, and failures
     inserts = 0
     updates = 0
-    skips   = 0
+    skips = 0
     failures = []
 
     try:
         with engine.connect() as conn:
-            step = 'drop table'
-            if operation == 'replace':
+            step = "drop table"
+            if operation == "replace":
                 conn.execute(table.delete())
                 conn.commit()
 
             rows = 0
             for i, row in dataframe.iterrows():
                 try:
-                    values = {col: _deal_with_nans(row[col]) for col in dataframe.columns}
+                    values = {
+                        col: _deal_with_nans(row[col]) for col in dataframe.columns
+                    }
 
                     row_exists = False
-                    step = 'check existence'
+                    step = "check existence"
                     if keys:
                         # Check if row exists in the table based on keys
-                        exists_query = table.select().where(
-                            exists(
-                                table.select().where(
-                                    text(' AND '.join([f"{col} = :{col}" for col in keys]))
+                        exists_query = (
+                            table.select()
+                            .where(
+                                exists(
+                                    table.select().where(
+                                        text(
+                                            " AND ".join(
+                                                [f"{col} = :{col}" for col in keys]
+                                            )
+                                        )
+                                    )
                                 )
                             )
-                        ).params(**values)
+                            .params(**values)
+                        )
                         if conn.execute(exists_query).fetchone():
-                            row_exists = True 
+                            row_exists = True
                     if row_exists:
-                        if  operation == 'upsert':
+                        if operation == "upsert":
                             # Perform update
-                            step = 'replace with update'
+                            step = "replace with update"
                             update_values = {
-                                k: values[k]
-                                for k in values.keys() if k not in keys
+                                k: values[k] for k in values.keys() if k not in keys
                             }
 
-                            update_stmt = table.update().where(
-                                text(' AND '.join([f"{col}=:{col}" for col in keys]))
-                            ).values(**update_values)
+                            update_stmt = (
+                                table.update()
+                                .where(
+                                    text(
+                                        " AND ".join([f"{col}=:{col}" for col in keys])
+                                    )
+                                )
+                                .values(**update_values)
+                            )
 
                             update_stmt = text(str(update_stmt))
                             conn.execute(update_stmt, values)
@@ -310,7 +353,7 @@ def table_operation(operation, dataframe, engine, table_name, schema=None, keys=
                             skips += 1
                     else:
                         # Perform insert
-                        step = 'perform insert'
+                        step = "perform insert"
                         insert_stmt = table.insert().values(**values)
                         conn.execute(insert_stmt)
                         inserts += 1
@@ -320,42 +363,50 @@ def table_operation(operation, dataframe, engine, table_name, schema=None, keys=
                         conn.commit()
                         rows = 0
                 except Exception as e:
-                        failures .append({
-                            'step': step,
-                            'row': (
-                                i, ', '.join([
-                                    f"{k}='{str(v)}'" for k, v in values.items()
-                            ])),
-                            'error': str(e)
-                        })
-                        conn.rollback()
-                        continue    
+                    failures.append(
+                        {
+                            "step": step,
+                            "row": (
+                                i,
+                                ", ".join(
+                                    [f"{k}='{str(v)}'" for k, v in values.items()]
+                                ),
+                            ),
+                            "error": str(e),
+                        }
+                    )
+                    conn.rollback()
+                    continue
             conn.commit()
     except Exception as e:
         conn.rollback()
-        failures.append({
-            'step': step,
-            'row': None,
-            'error': str(e)
-        })
+        failures.append({"step": step, "row": None, "error": str(e)})
 
     return {
-        'operation': operation,
-        'table_name': '.'.join([schema, table_name]),
-        'insertions': inserts,
-        'updates': updates,
-        'skips': skips,
-        'failures': failures,
+        "operation": operation,
+        "table_name": ".".join([schema, table_name]),
+        "insertions": inserts,
+        "updates": updates,
+        "skips": skips,
+        "failures": failures,
     }
 
 
-def create_table(dataframe, engine, table_name, schema=None, keys=None, index=None):
+def create_table(
+    dataframe: pd.DataFrame,
+    engine: Engine,
+    table_name: str,
+    schema: str = None,
+    keys: List[str] = [],
+    index: str = None,
+) -> None:
     """
     Create a table in the database using the provided pandas DataFrame as a schema.
 
     Args:
         dataframe (pd.DataFrame): The pandas DataFrame containing the schema information.
         table_name (str): The name of the table to be created.
+        schema (str, optional): The name of the schema to be created. Default is None.
         engine (sqlalchemy.engine.Engine): The SQLAlchemy engine engine.
         keys (list of str, optional): List of column names to use as keys for index creation. Default is None.
         index (str, optional): Whether to create an index and what kind using the keys. Default is None (not create index).
@@ -365,16 +416,18 @@ def create_table(dataframe, engine, table_name, schema=None, keys=None, index=No
     # Check parameters
     if not type(dataframe) == pd.DataFrame:
         raise ValueError("Dataframe must be a Pandas DataFrame.")
-    
+
     if keys and not type(keys) == list:
         raise ValueError("Parameters 'keys' must be a list of str.")
-    
-    if keys and index and index not in ('standard', 'unique', 'primary'):
-        raise ValueError("If an index will be created, it must be any of standard|unique|primary.")
+
+    if keys and index and index not in ("standard", "unique", "primary"):
+        raise ValueError(
+            "If an index will be created, it must be any of standard|unique|primary."
+        )
 
     metadata = MetaData(schema)
 
-    if keys and index == 'primary':
+    if keys and index == "primary":
         columns = get_columns_types(dataframe, primary_keys=keys)
     else:
         columns = get_columns_types(dataframe, primary_keys=[])
@@ -382,9 +435,9 @@ def create_table(dataframe, engine, table_name, schema=None, keys=None, index=No
     table = Table(table_name, metadata, *columns)
 
     # Create the index if required
-    if keys and index in ('standard', 'unique'):
-        unique = (index == 'unique')
-        idx_suffix = 'uk' if unique else 'ik'
+    if keys and index in ("standard", "unique"):
+        unique = index == "unique"
+        idx_suffix = "uk" if unique else "ik"
         table.indexes.add(
             create_index(f"{table_name}_i001_{idx_suffix}", table, keys, unique)
         )
@@ -392,7 +445,9 @@ def create_table(dataframe, engine, table_name, schema=None, keys=None, index=No
     return metadata.create_all(engine)
 
 
-def create_index(name, table, keys, unique=True):
+def create_index(
+    name: str, table: Selectable, keys: List[str], unique: bool = True
+) -> Index:
     """Create an index on the specified keys for a given table.
 
     Args:
@@ -403,16 +458,18 @@ def create_index(name, table, keys, unique=True):
     """
     index_cols = [c for c in table.columns if c.name in keys]
     index_obj = Index(name, *index_cols, unique=unique)
-    
+
     return index_obj
 
 
-def get_columns_types(dataframe, primary_keys=[]):
+def get_columns_types(
+    dataframe: pd.DataFrame, primary_keys: List[str] = []
+) -> List[Column]:
     """
     Returns a list of Column objects representing the columns of the given dataframe.
      Args:
         dataframe (pandas.DataFrame): The input dataframe for which column types are to be determined.
-        primary_keys (List[str]): Optional list of primary key column names. 
+        primary_keys (List[str]): Optional list of primary key column names.
      Returns:
         list: A list of Column objects, where each object represents a column in the dataframe.
      Raises:
@@ -435,12 +492,15 @@ def get_columns_types(dataframe, primary_keys=[]):
     """
     return [
         Column(
-            col, get_column_type(dataframe.dtypes[col]), primary_key=(col in primary_keys)
-        ) for col in dataframe.columns
+            col,
+            get_column_type(dataframe.dtypes[col]),
+            primary_key=(col in primary_keys),
+        )
+        for col in dataframe.columns
     ]
 
 
-def get_column_type(dtype):
+def get_column_type(dtype: str) -> TypeEngine:
     """
     Map Pandas data types to SQLAlchemy data types.
 
@@ -452,21 +512,23 @@ def get_column_type(dtype):
         For string columns, a default 4000 chars lenght column is created.
 
     """
-    if dtype in ('int64', 'int32', 'int'):
+    if dtype in ("int64", "int32", "int"):
         return Integer()
-    elif dtype in ('float64', 'float32', 'float'):
+    elif dtype in ("float64", "float32", "float"):
         return Float()
-    elif dtype == 'bool':
+    elif dtype == "bool":
         return Boolean()
-    elif dtype == 'object':
+    elif dtype == "object":
         return String()
-    elif dtype == 'datetime64[ns]':
+    elif dtype == "datetime64[ns]":
         return DateTime()
     else:
         return String(4000)
 
 
-def get_data_from_pandas(df, include_index=False):
+def get_data_from_pandas(
+    df: pd.DataFrame, include_index: bool = False
+) -> Tuple[List[List[Any]], List[str]]:
     """
     Extracts data and column names from a Pandas DataFrame.
 
@@ -486,20 +548,25 @@ def get_data_from_pandas(df, include_index=False):
         >>> print(columns)
         ['Name', 'Age']
     """
-    if not 'pandas.core.frame.DataFrame' in str(type(df)):
-        raise ValueError('Not a Pandas DataFrame.')
-    
+    if not "pandas.core.frame.DataFrame" in str(type(df)):
+        raise ValueError("Not a Pandas DataFrame.")
+
     data = [list(d) for d in df.to_records(index=include_index)]
 
     columns = list(c for c in df.columns)
 
     if include_index:
-        columns.insert(0, 'Index')
+        columns.insert(0, "Index")
 
     return data, columns
 
 
-def ascii_table(data, columns=[], alignment='left', numrows=None):
+def ascii_table(
+    data: List[List[Any]],
+    columns: List[str] = [],
+    alignment: str = "left",
+    numrows: int = None,
+) -> List[str]:
     """
     Creates an ASCII table representation of the given data.
 
@@ -507,6 +574,7 @@ def ascii_table(data, columns=[], alignment='left', numrows=None):
         data (list): A list of lists representing the data rows.
         columns (list, optional): A list of column names. Defaults to an empty list.
         alignment (str, optional): The alignment of the table cells. Valid values are 'left', 'right', or 'center'. Defaults to 'left'.
+        numrows (int, optional): The number of rows to display. If None, all rows are displayed. Defaults to None.
 
     Returns:
         list: A list of strings representing the ASCII table.
@@ -529,22 +597,31 @@ def ascii_table(data, columns=[], alignment='left', numrows=None):
     if len(data) == 0:
         return None
 
-    data = [list(e) for e in data] 
+    data = [list(e) for e in data]
     columns = list([c for c in columns])
-    alignment = alignment or 'left'
+    alignment = alignment or "left"
 
-    def pad(x, size, char=' ', where='center'):
-        char = char or ' '
-        where = where or 'center'
-        return str(x).rjust(size, char) \
-            if where=='right' else str(x).ljust(size, char) \
-                if where=='left' else str(x).center(size, char)
+    def pad(x, size, char=" ", where="center"):
+        char = char or " "
+        where = where or "center"
+        return (
+            str(x).rjust(size, char)
+            if where == "right"
+            else (
+                str(x).ljust(size, char)
+                if where == "left"
+                else str(x).center(size, char)
+            )
+        )
 
-    def line(rows, sizes, where='center'):
-        return '|'+'|'.join([
-            pad(rows[i], sizes[i], where=where) 
-            for i in range(0, len(rows))
-        ])+'|'
+    def line(rows, sizes, where="center"):
+        return (
+            "|"
+            + "|".join(
+                [pad(rows[i], sizes[i], where=where) for i in range(0, len(rows))]
+            )
+            + "|"
+        )
 
     col_lenghts = tuple(set([len(d) for d in data]))
 
@@ -552,26 +629,28 @@ def ascii_table(data, columns=[], alignment='left', numrows=None):
         return None
 
     if len(col_lenghts) > 1:
-        raise ValueError('Number of columns mismatch among rows.')
-    
-    if alignment not in ('left', 'right', 'center'):
-        raise ValueError(
-            'Alignment valid values: left|right|center')
-        
+        raise ValueError("Number of columns mismatch among rows.")
+
+    if alignment not in ("left", "right", "center"):
+        raise ValueError("Alignment valid values: left|right|center")
+
     if columns is None or len(columns) == 0:
-        columns = [f'column_{i}' for i in range(0, col_lenghts[0])]
+        columns = [f"column_{i}" for i in range(0, col_lenghts[0])]
 
     if len(columns) != col_lenghts[0]:
         print(col_lenghts, columns)
-        raise ValueError(f'Number of columns mismatch with data row.')
-    
-    xdata = [[row[i] for i in range(len(data[0])) if columns[i] in columns] for row in data]
+        raise ValueError(f"Number of columns mismatch with data row.")
+
+    if numrows is None or numrows > len(data):
+        numrows = len(data)
+    xdata = [
+        [row[i] for i in range(len(data[0])) if columns[i] in columns] for row in data
+    ][0:numrows]
 
     max_sizes = list(
-        max(n) for n in list(
-            list(
-                len(str(r[i])) for r in xdata
-            ) for i in range(0, len(xdata[0]))
+        max(n)
+        for n in list(
+            list(len(str(r[i])) for r in xdata) for i in range(0, len(xdata[0]))
         )
     )
 
@@ -581,7 +660,7 @@ def ascii_table(data, columns=[], alignment='left', numrows=None):
         new_max_sizes.append(max(max_sizes[i], col_sizes[i]))
     max_sizes = new_max_sizes
 
-    line_sep = ''.join(['+'+'-'*i for i in max_sizes])+'+'
+    line_sep = "".join(["+" + "-" * i for i in max_sizes]) + "+"
 
     table = []
     table.append(line_sep)
@@ -594,7 +673,12 @@ def ascii_table(data, columns=[], alignment='left', numrows=None):
     return table
 
 
-def print_ascii_table(data, columns=[], alignment='left'):
+def print_ascii_table(
+    data: List[List[Any]],
+    columns: List[str] = [],
+    alignment: str = "left",
+    numrows: int = None,
+) -> None:
     """
     Prints the ASCII table representation of the given data.
 
@@ -622,13 +706,13 @@ def print_ascii_table(data, columns=[], alignment='left'):
     if data is None:
         return None
 
-    table = ascii_table(data, columns=columns, alignment=alignment)
+    table = ascii_table(data, columns=columns, alignment=alignment, numrows=numrows)
 
     for line in table:
         print(line)
 
 
-def print_ascii_table_from_dataframe(df, alignment='left'):
+def print_ascii_table_from_dataframe(df: pd.DataFrame, alignment: str = "left") -> None:
     """
     Prints the ASCII table representation of a pandas DataFrame.
     - Attempts to extract the data and column names from the pandas DataFrame using a helper function.
@@ -658,41 +742,41 @@ def print_ascii_table_from_dataframe(df, alignment='left'):
     try:
         data, columns = get_data_from_pandas(df)
     except Exception as e:
-        raise ValueError(f'Invalid pandas dataframe: {e}.')
+        raise ValueError(f"Invalid pandas dataframe: {e}.")
 
     if all([data, columns]):
         print_ascii_table(data, columns, alignment)
 
-    
-import re
 
-import re
-
-def normalize_columns(cols):
+def normalize_columns(cols: List[str]) -> List[str]:
     """
     Normalizes a list of column names by removing special characters and converting to lowercase.
-    
+
     Args:
         cols (list): A list of column names.
-        
+
     Returns:
         list: A list of normalized column names.
-        
+
     Raises:
         AttributeError: If any column name contains special characters that cannot be normalized.
-        
+
     Example:
         >>> cols = ['Name!', 'Age@', '#Address']
         >>> normalize_columns(cols)
         ['name', 'age', 'address']
     """
     # test if the column names contain special characters
-    if any([re.search('[^0-9a-zA-Z_]+', x) for x in cols]):
-        raise AttributeError('Column names contain special characters that cannot be normalized.')
-    return [re.sub('[^0-9a-zA-Z_]+', '', x).lower() for x in cols]
+    if any([re.search("[^0-9a-zA-Z_]+", x) for x in cols]):
+        raise AttributeError(
+            "Column names contain special characters that cannot be normalized."
+        )
+    return [re.sub("[^0-9a-zA-Z_]+", "", x).lower() for x in cols]
 
 
-def print_columns(cols, normalize=False, length=None, quotes=False):
+def print_columns(
+    cols: List[str], normalize: bool = False, length: int = None, quotes: bool = False
+) -> None:
     """
     Prints a formatted string representation of a list of columns.
 
@@ -718,6 +802,6 @@ def print_columns(cols, normalize=False, length=None, quotes=False):
 
     length = length or max([len(c) for c in cols])
 
-    colstrings = ', '.join([c.ljust(length, ' ') for c in cols])
+    colstrings = ", ".join([c.ljust(length, " ") for c in cols])
 
     print(colstrings)

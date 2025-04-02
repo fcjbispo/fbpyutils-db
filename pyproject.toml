@@ -10,7 +10,7 @@ requires-python = ">=3.11,<4.0"
 dependencies = [
     "pandas",
     "numpy",
-    "sqlalchemy"
+    "sqlalchemy",
 ]
 
 [build-system]
