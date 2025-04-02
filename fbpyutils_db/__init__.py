@@ -4,8 +4,7 @@ Utility functions to manipulate data, tables and dataframes.
 import pandas as pd
 import numpy as np
 from sqlalchemy import inspect, MetaData, Table, Column, Integer, String, Float, DateTime, Boolean, text, Index
-from sqlalchemy.engine import Engine
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.sqltypes import TypeEngine
 from sqlalchemy.sql import exists
 from datetime import datetime, date
 import hashlib
