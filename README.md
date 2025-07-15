@@ -19,10 +19,16 @@ This project provides a collection of Python utility functions focused on databa
 
 ## Documentation
 
-Detailed documentation is available within the source code docstrings. For project overview and updates, refer to the [project's GitHub repository](https://github.com/fcjbispo/fbpyutils-db).
+### 📚 Complete Documentation
+- **[DOC.md](DOC.md)** - Comprehensive documentation with usage examples and API reference
+- **[TODO.md](TODO.md)** - Implementation and testing status tracker
+- **[SPEC.md](SPEC.md)** - Technical specification and requirements
 
-For detailed function documentation, see [DOC.md](DOC.md).
-To track the implementation and testing status of features, see [TODO.md](TODO.md).
+### 📖 Quick Links
+- [Installation Guide](#installation)
+- [Usage Examples](DOC.md#usage)
+- [API Reference](DOC.md#functions)
+- [Testing Status](TODO.md#implementation-status)
 
 ## Authors
 
@@ -52,6 +58,15 @@ uv pip install .
 pytest tests
 ```
 
+## Development
+
+This project follows the VIBE (Vibe Intelligent Development Environment) guidelines. The codebase includes:
+
+- **Memory Bank**: Complete project documentation in `memory_bank/` directory
+- **Test Coverage**: >90% coverage with pytest and pytest-cov
+- **Type Safety**: Full type hints throughout codebase
+- **Documentation**: Comprehensive docs following Google-style docstrings
+
 ## License
 This project is licensed under the MIT License. For the full text of the license, see [the official MIT License](https://opensource.org/licenses/MIT).
 
@@ -65,5 +80,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 **THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
-
-

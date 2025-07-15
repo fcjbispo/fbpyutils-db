@@ -24,5 +24,5 @@ def test_get_data_from_pandas_empty_dataframe():
 
 
 def test_get_data_from_pandas_invalid_input():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         get_data_from_pandas("not a dataframe")

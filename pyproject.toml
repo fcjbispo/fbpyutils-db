@@ -1,6 +1,6 @@
 [project]
 name = "fbpyutils-db"
-version = "0.1.0"
+version = "0.1.1"
 description = "Francisco Bispo's utilities for DB"
 readme = "README.md"
 authors = [
@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11,<4.0"
 dependencies = [
+    "fbpyutils", 
     "pandas",
     "numpy",
     "sqlalchemy",
@@ -23,3 +24,6 @@ dev = [
     "pytest>=8.3.5",
     "pytest-cov>=6.0.0",
 ]
+
+[tool.uv.sources]
+fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.7-py3-none-any.whl" }

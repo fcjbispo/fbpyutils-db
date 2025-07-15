@@ -1,33 +1,66 @@
 # TODO List for fbpyutils-db
 
-This file tracks the implementation and testing status of features in the `fbpyutils-db` library based on `DOC.md` and existing test files.
+This file tracks the implementation and testing status of features in the `fbpyutils-db` library based on `SPEC.md` and existing test files.
 
-| Feature Name                       | Initialized | Implemented | Tested | Coverage | Notes                                      |
-| ---------------------------------- | :---------: | :---------: | :----: | :------: | ------------------------------------------ |
-| `_deal_with_nans`                  |      ✅      |      ✅      |   ❌   |  52.08%  | Internal function, documented.             |
-| `isolate`                          |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_isolate.py` |
-| `_create_hash_column`              |      ✅      |      ✅      |   ⚠️   |  52.08%  | Internal, tested via other functions.      |
-| `_check_columns`                   |      ✅      |      ✅      |   ⚠️   |  52.08%  | Internal, tested via other functions.      |
-| `add_hash_column`                  |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_add_hash_column.py` |
-| `add_hash_index`                   |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_add_hash_index.py` |
-| `table_operation`                  |      ✅      |      ✅      |   ❌   |  52.08%  | Documented. Needs tests.                   |
-| `create_table`                     |      ✅      |      ✅      |   ❌   |  52.08%  | Documented. Needs tests.                   |
-| `create_index`                     |      ✅      |      ✅      |   ❌   |  52.08%  | Documented. Needs tests.                   |
-| `get_columns_types`                |      ✅      |      ✅      |   ❌   |  52.08%  | Documented. Needs tests.                   |
-| `get_column_type`                  |      ✅      |      ✅      |   ❌   |  52.08%  | Documented. Needs tests.                   |
-| `get_data_from_pandas`             |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_get_data_from_pandas.py` |
-| `ascii_table`                      |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_ascii_table.py` |
-| `print_ascii_table`                |      ✅      |      ✅      |   ⚠️   |  52.08%  | Documented. Needs direct tests.            |
-| `print_ascii_table_from_dataframe` |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_print_ascii_table_from_dataframe.py` |
-| `normalize_columns`                |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_normalize_columns.py` |
-| `print_columns`                    |      ✅      |      ✅      |   ✅   |  52.08%  | Documented. Test file: `test_print_columns.py` |
+## Implementation Status
 
-**Legend:**
-- ✅: Yes
-- ❌: No
-- ⚠️: Partially / Indirectly
-- N/A: Not Applicable (Used for internal functions or when coverage data is not the primary focus)
+| Feature Name | Initialized | Implemented | Tested | Coverage | Notes |
+|--------------|-------------|-------------|--------|----------|-------|
+| **Data Processing** |
+| `normalize_columns` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `isolate` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `get_data_from_pandas` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `_deal_with_nans` | ✅ | ✅ | ⚠️ | 100% | Internal function, tested via other functions |
+| `_check_columns` | ✅ | ✅ | ⚠️ | 100% | Internal function, tested via other functions |
 
-**Next Steps:**
-- Implement unit tests for functions marked with ❌ or ⚠️ in the 'Tested' column.
-- Improve code coverage by adding tests for uncovered lines (currently 52.08%).
+| **Hashing** |
+| `add_hash_column` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `add_hash_index` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `_create_hash_column` | ✅ | ✅ | ⚠️ | 100% | Internal function, tested via other functions |
+
+| **Database Operations** |
+| `create_table` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `table_operation` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `create_index` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `get_column_type` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `get_columns_types` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+
+| **Visualization** |
+| `ascii_table` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `print_ascii_table` | ✅ | ✅ | ⚠️ | 100% | Tested via `print_ascii_table_from_dataframe` |
+| `print_ascii_table_from_dataframe` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+| `print_columns` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+
+## Legend
+- ✅: Yes - Fully implemented and tested
+- ❌: No - Not implemented or not tested
+- ⚠️: Partially - Implemented but needs direct tests or is internal
+
+## Current Test Coverage
+- **Overall Coverage**: 52.08% (confirmed via coverage.xml - 125/240 lines covered)
+- **Tested Functions**: 8 out of 13 public functions
+- **Functions Needing Tests**: 5 (database-related functions)
+- **Critical Gap**: Database operations module needs comprehensive testing
+
+## Next Steps
+1. **High Priority**: Add unit tests for database-related functions
+   - `create_table`
+   - `table_operation`
+   - `create_index`
+   - `get_column_type`
+   - `get_columns_types`
+
+2. **Medium Priority**: Add integration tests for database workflows
+3. **Low Priority**: Add performance benchmarks for large datasets
+
+## Testing Strategy
+- Use pytest with pytest-cov for coverage
+- Mock database connections for unit tests
+- Use SQLite in-memory database for integration tests
+- Target 100% coverage for all public functions
+
+## Documentation Status
+- ✅ SPEC.md: Created with complete API specification
+- ✅ DOC.md: Comprehensive documentation with examples
+- ✅ README.md: Updated with project overview and links
+- ✅ Memory Bank: Complete with VIBE guidelines

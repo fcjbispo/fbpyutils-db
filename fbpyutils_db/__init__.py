@@ -2,6 +2,7 @@
 Utility functions to manipulate data, tables and dataframes.
 """
 
+import os
 import re
 from typing import Any, Dict, List, Tuple, Union
 import pandas as pd
@@ -25,6 +26,20 @@ from sqlalchemy.sql.sqltypes import TypeEngine
 from sqlalchemy.sql import exists
 from datetime import datetime, date
 import hashlib
+
+from fbpyutils.env import Env
+from fbpyutils.logging import Logger
+
+AppEnv = Env.load_config_from("fbpyutils_db/app.json")
+
+Logger.configure({
+    "app_name": AppEnv.APP.name,
+    "log_level": AppEnv.LOG_LEVEL,
+    "log_format": AppEnv.LOG_FORMAT,
+    "log_file_path": f"{os.path.sep.join([AppEnv.USER_APP_FOLDER, AppEnv.LOG_FILE])}"
+})
+
+logger = Logger
 
 
 def _deal_with_nans(x: Any) -> Any:
@@ -73,11 +88,16 @@ def isolate(df: pd.DataFrame, group_columns: List[str]):
     1     A      2       6
     3     B      4       8
     """
+    logger.debug(f"Starting isolate operation with group_columns: {group_columns}")
+    logger.debug(f"Input DataFrame shape: {df.shape}")
+    
     # Find the index of the row with the maximum 'Unique' value for each group
     idx = df.groupby(group_columns)["Unique"].idxmax()
-
-    # Return the rows corresponding to the maximum values
-    return df.loc[idx]
+    
+    result = df.loc[idx]
+    logger.info(f"Isolate operation completed. Result DataFrame shape: {result.shape}")
+    
+    return result
 
 
 def _create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
@@ -149,24 +169,42 @@ def add_hash_column(
     """
     # Parameter checks
     if not isinstance(df, pd.DataFrame):
+        logger.error("Invalid DataFrame type provided")
         raise TypeError("The 'df' parameter should be of type pandas.DataFrame.")
     if not isinstance(column_name, str):
+        logger.error("Invalid column_name type provided")
         raise TypeError("The 'index_name' parameter should be a string.")
     if not isinstance(length, int):
+        logger.error("Invalid length type provided")
         raise TypeError("The 'length' parameter should be an integer.")
     if length <= 0:
+        logger.error("Invalid length value provided")
         raise ValueError("The 'length' parameter should be greater than 0.")
     if columns and type(columns) != list:
+        logger.error("Invalid columns type provided")
         raise ValueError("When given, columns must be a list of column names")
     if columns and not _check_columns(df, columns):
+        logger.error("One or more specified columns not found in DataFrame")
         raise ValueError("When given, all column names should exist in the dataframe.")
+    
+    logger.debug(f"Adding hash column '{column_name}' with length={length}")
+    logger.debug(f"Using columns for hash: {columns if columns else 'all columns'}")
+    logger.debug(f"Input DataFrame shape: {df.shape}")
+    
     # Creates the hash column
     if columns:
         xdf = df[columns].copy()
+        logger.debug(f"Using subset of columns: {columns}")
     else:
         xdf = df.copy()
+        logger.debug("Using all columns for hash generation")
+    
     df[column_name] = _create_hash_column(xdf, length)
     xcolumns = [column_name, *[c for c in df.columns if c != column_name]]
+    
+    logger.info(f"Successfully added hash column '{column_name}' to DataFrame")
+    logger.debug(f"New DataFrame shape: {df.shape}")
+    
     return df[xcolumns].copy()
 
 
@@ -204,27 +242,47 @@ def add_hash_index(
     """
     # Parameter checks
     if not isinstance(df, pd.DataFrame):
+        logger.error("Invalid DataFrame type provided")
         raise TypeError("The 'df' parameter should be of type pandas.DataFrame.")
     if not isinstance(index_name, str):
+        logger.error("Invalid index_name type provided")
         raise TypeError("The 'index_name' parameter should be a string.")
     if not isinstance(length, int):
+        logger.error("Invalid length type provided")
         raise TypeError("The 'length' parameter should be an integer.")
     if length <= 0:
+        logger.error("Invalid length value provided")
         raise ValueError("The 'length' parameter should be greater than 0.")
     if columns and type(columns) != list:
+        logger.error("Invalid columns type provided")
         raise ValueError("When given, columns must be a list of column names")
     if columns and not _check_columns(df, columns):
+        logger.error("One or more specified columns not found in DataFrame")
         raise ValueError("When given, all column names should exist in the dataframe.")
+    
+    logger.debug(f"Adding hash index '{index_name}' with length={length}")
+    logger.debug(f"Using columns for hash: {columns if columns else 'all columns'}")
+    logger.debug(f"Input DataFrame shape: {df.shape}")
+    
     # Creates the hash column
     if columns:
         xdf = df[columns].copy()
+        logger.debug(f"Using subset of columns: {columns}")
     else:
         xdf = df.copy()
+        logger.debug("Using all columns for hash generation")
+    
     hash_df = _create_hash_column(xdf, length)
+    logger.debug(f"Generated {len(hash_df)} hash values for index")
+    
     # Set the hash string as the new index
     df.index = hash_df
     # Rename the index
     df.index.name = index_name
+    
+    logger.info(f"Successfully added hash index '{index_name}' to DataFrame")
+    logger.debug(f"New DataFrame shape: {df.shape}")
+    
     return df
 
 
@@ -257,30 +315,45 @@ def table_operation(
         dict: A dictionary containing information about the performed operation.
 
     """
+    logger.info(f"Starting table operation: {operation}")
+    logger.debug(f"Table: {table_name}, Schema: {schema}")
+    logger.debug(f"DataFrame shape: {dataframe.shape}")
+    logger.debug(f"Keys: {keys}, Index: {index}, Commit at: {commit_at}")
+    
     # Check parameters
     if operation not in ("append", "upsert", "replace"):
+        logger.error(f"Invalid operation: {operation}")
         raise ValueError("Invalid operation. Valid values: append|upsert|replace.")
 
     if not type(dataframe) == pd.DataFrame:
+        logger.error("Invalid DataFrame type provided")
         raise ValueError("Dataframe must be a Pandas DataFrame.")
 
     if operation == "upsert" and not keys:
+        logger.error("Missing keys parameter for upsert operation")
         raise ValueError("For upsert operation 'keys' parameter is mandatory.")
 
     if keys and not type(keys) == list:
+        logger.error("Invalid keys type provided")
         raise ValueError("Parameters 'keys' must be a list of str.")
 
     if (keys and index) and index not in ("standard", "unique", "primary"):
+        logger.error(f"Invalid index type: {index}")
         raise ValueError(
             "If an index will be created, it must be any of standard|unique|primary."
         )
 
     commit_at = commit_at or 50
     if not type(commit_at) == int or (commit_at < 1 and commit_at > len(dataframe)):
+        logger.error(f"Invalid commit_at value: {commit_at}")
         raise ValueError("Commit At must be > 1 and < total rows of DataFrame.")
 
     # Check if the table exists in the database, if not create it
-    if not inspect(engine).has_table(table_name, schema=schema):
+    table_exists = inspect(engine).has_table(table_name, schema=schema)
+    logger.debug(f"Table '{table_name}' exists: {table_exists}")
+    
+    if not table_exists:
+        logger.info(f"Creating table '{table_name}' as it doesn't exist")
         create_table(dataframe, engine, table_name, schema, keys, index)
 
     # Get the table object
@@ -292,20 +365,28 @@ def table_operation(
     updates = 0
     skips = 0
     failures = []
+    
+    logger.info(f"Starting {operation} operation on {len(dataframe)} rows")
 
     try:
         with engine.connect() as conn:
             step = "drop table"
             if operation == "replace":
+                logger.info("Performing replace operation - clearing table")
                 conn.execute(table.delete())
                 conn.commit()
+                logger.debug("Table cleared successfully")
 
             rows = 0
+            processed_rows = 0
+            
             for i, row in dataframe.iterrows():
                 try:
                     values = {
                         col: _deal_with_nans(row[col]) for col in dataframe.columns
                     }
+                    
+                    logger.debug(f"Processing row {i}: {values}")
 
                     row_exists = False
                     step = "check existence"
@@ -328,6 +409,8 @@ def table_operation(
                         )
                         if conn.execute(exists_query).fetchone():
                             row_exists = True
+                            logger.debug(f"Row {i} exists based on keys {keys}")
+                    
                     if row_exists:
                         if operation == "upsert":
                             # Perform update
@@ -335,6 +418,8 @@ def table_operation(
                             update_values = {
                                 k: values[k] for k in values.keys() if k not in keys
                             }
+                            
+                            logger.debug(f"Updating row {i} with values: {update_values}")
 
                             update_stmt = (
                                 table.update()
@@ -349,20 +434,31 @@ def table_operation(
                             update_stmt = text(str(update_stmt))
                             conn.execute(update_stmt, values)
                             updates += 1
+                            logger.debug(f"Row {i} updated successfully")
                         else:
                             skips += 1
+                            logger.debug(f"Row {i} skipped (already exists)")
                     else:
                         # Perform insert
                         step = "perform insert"
                         insert_stmt = table.insert().values(**values)
                         conn.execute(insert_stmt)
                         inserts += 1
+                        logger.debug(f"Row {i} inserted successfully")
 
                     rows += 1
+                    processed_rows += 1
+                    
                     if rows >= commit_at:
                         conn.commit()
+                        logger.debug(f"Committed {rows} rows")
                         rows = 0
+                        
+                    if processed_rows % 100 == 0:
+                        logger.info(f"Processed {processed_rows}/{len(dataframe)} rows")
+                        
                 except Exception as e:
+                    logger.error(f"Error processing row {i}: {str(e)}")
                     failures.append(
                         {
                             "step": step,
@@ -378,11 +474,13 @@ def table_operation(
                     conn.rollback()
                     continue
             conn.commit()
+            logger.info(f"Operation completed. Total processed: {processed_rows}")
     except Exception as e:
+        logger.error(f"Critical error in table operation: {str(e)}")
         conn.rollback()
         failures.append({"step": step, "row": None, "error": str(e)})
 
-    return {
+    result = {
         "operation": operation,
         "table_name": ".".join([schema, table_name]),
         "insertions": inserts,
@@ -390,6 +488,15 @@ def table_operation(
         "skips": skips,
         "failures": failures,
     }
+    
+    logger.info(f"Operation summary: {inserts} inserts, {updates} updates, {skips} skips, {len(failures)} failures")
+    
+    if failures:
+        logger.warning(f"Operation completed with {len(failures)} failures")
+        for failure in failures[:5]:  # Log first 5 failures
+            logger.warning(f"Failure: {failure}")
+    
+    return result
 
 
 def create_table(
@@ -413,18 +520,25 @@ def create_table(
             If an index muste be created, index be in 'standard' or 'unique'.
 
     """
+    logger.info(f"Creating table '{table_name}' in schema '{schema}'")
+    
     # Check parameters
     if not type(dataframe) == pd.DataFrame:
+        logger.error("Invalid dataframe type provided")
         raise ValueError("Dataframe must be a Pandas DataFrame.")
 
     if keys and not type(keys) == list:
+        logger.error("Invalid keys type provided")
         raise ValueError("Parameters 'keys' must be a list of str.")
 
     if keys and index and index not in ("standard", "unique", "primary"):
+        logger.error(f"Invalid index type: {index}")
         raise ValueError(
             "If an index will be created, it must be any of standard|unique|primary."
         )
 
+    logger.debug(f"Creating table with keys: {keys}, index type: {index}")
+    
     metadata = MetaData(schema)
 
     if keys and index == "primary":
@@ -438,11 +552,16 @@ def create_table(
     if keys and index in ("standard", "unique"):
         unique = index == "unique"
         idx_suffix = "uk" if unique else "ik"
+        index_name = f"{table_name}_i001_{idx_suffix}"
+        logger.debug(f"Creating {index} index '{index_name}' on columns: {keys}")
         table.indexes.add(
-            create_index(f"{table_name}_i001_{idx_suffix}", table, keys, unique)
+            create_index(index_name, table, keys, unique)
         )
 
-    return metadata.create_all(engine)
+    logger.info(f"Creating table structure in database")
+    result = metadata.create_all(engine)
+    logger.info(f"Table '{table_name}' created successfully")
+    return result
 
 
 def create_index(
@@ -456,9 +575,16 @@ def create_index(
         keys (list of str): A list of column names that should be part of the index.
         unique (bool, optional): Whether the index should enforce uniqueness. Default is True.
     """
+    logger.debug(f"Creating index '{name}' on columns: {keys}, unique: {unique}")
+    
     index_cols = [c for c in table.columns if c.name in keys]
+    if not index_cols:
+        logger.warning(f"No columns found for index '{name}' with keys: {keys}")
+        raise ValueError(f"No matching columns found for keys: {keys}")
+    
     index_obj = Index(name, *index_cols, unique=unique)
-
+    logger.debug(f"Index '{name}' created successfully with {len(index_cols)} columns")
+    
     return index_obj
 
 
@@ -490,14 +616,24 @@ def get_columns_types(
             >>> col.dtype
             'int64'
     """
-    return [
-        Column(
-            col,
-            get_column_type(dataframe.dtypes[col]),
-            primary_key=(col in primary_keys),
+    logger.debug(f"Getting column types for DataFrame with {len(dataframe.columns)} columns")
+    logger.debug(f"Primary keys: {primary_keys}")
+    
+    columns = []
+    for col in dataframe.columns:
+        col_type = get_column_type(dataframe.dtypes[col])
+        is_primary = col in primary_keys
+        logger.debug(f"Column '{col}': type={col_type}, primary_key={is_primary}")
+        columns.append(
+            Column(
+                col,
+                col_type,
+                primary_key=is_primary,
+            )
         )
-        for col in dataframe.columns
-    ]
+    
+    logger.info(f"Generated {len(columns)} column definitions")
+    return columns
 
 
 def get_column_type(dtype: str) -> TypeEngine:
@@ -512,18 +648,24 @@ def get_column_type(dtype: str) -> TypeEngine:
         For string columns, a default 4000 chars lenght column is created.
 
     """
+    logger.debug(f"Mapping pandas dtype '{dtype}' to SQLAlchemy type")
+    
     if dtype in ("int64", "int32", "int"):
-        return Integer()
+        sql_type = Integer()
     elif dtype in ("float64", "float32", "float"):
-        return Float()
+        sql_type = Float()
     elif dtype == "bool":
-        return Boolean()
+        sql_type = Boolean()
     elif dtype == "object":
-        return String()
+        sql_type = String()
     elif dtype == "datetime64[ns]":
-        return DateTime()
+        sql_type = DateTime()
     else:
-        return String(4000)
+        logger.warning(f"Unknown pandas dtype '{dtype}', defaulting to String(4000)")
+        sql_type = String(4000)
+    
+    logger.debug(f"Mapped '{dtype}' to {type(sql_type).__name__}")
+    return sql_type
 
 
 def get_data_from_pandas(
@@ -548,16 +690,22 @@ def get_data_from_pandas(
         >>> print(columns)
         ['Name', 'Age']
     """
-    if not "pandas.core.frame.DataFrame" in str(type(df)):
-        raise ValueError("Not a Pandas DataFrame.")
+    if not isinstance(df, pd.DataFrame):
+        logger.error("Invalid input type provided, expected pandas DataFrame")
+        raise TypeError("Input must be a pandas DataFrame")
+    
+    logger.debug(f"Extracting data from DataFrame with include_index={include_index}")
+    logger.debug(f"Input DataFrame shape: {df.shape}")
 
     data = [list(d) for d in df.to_records(index=include_index)]
-
     columns = list(c for c in df.columns)
 
     if include_index:
         columns.insert(0, "Index")
 
+    logger.info(f"Successfully extracted {len(data)} rows and {len(columns)} columns")
+    logger.debug(f"Extracted columns: {columns}")
+    
     return data, columns
 
 
@@ -594,7 +742,11 @@ def ascii_table(
         +-------+-----+---------+
 
     """
+    logger.debug(f"Creating ASCII table with {len(data)} rows, {len(columns)} columns")
+    logger.debug(f"Alignment: {alignment}, numrows: {numrows}")
+    
     if len(data) == 0:
+        logger.warning("Empty data provided to ascii_table")
         return None
 
     data = [list(e) for e in data]
@@ -638,7 +790,8 @@ def ascii_table(
         columns = [f"column_{i}" for i in range(0, col_lenghts[0])]
 
     if len(columns) != col_lenghts[0]:
-        print(col_lenghts, columns)
+        logger.error(f"Column length mismatch: data has {col_lenghts[0]} columns, but {len(columns)} provided")
+        logger.debug(f"Column lengths: {col_lenghts}, columns: {columns}")
         raise ValueError(f"Number of columns mismatch with data row.")
 
     if numrows is None or numrows > len(data):
@@ -670,6 +823,7 @@ def ascii_table(
         table.append(line(row, max_sizes, where=alignment))
     table.append(line_sep)
 
+    logger.debug(f"Successfully created ASCII table with {len(table)} lines")
     return table
 
 
@@ -706,10 +860,12 @@ def print_ascii_table(
     if data is None:
         return None
 
+    logger.info(f"Printing ASCII table with {len(data) if data else 0} rows")
     table = ascii_table(data, columns=columns, alignment=alignment, numrows=numrows)
 
     for line in table:
         print(line)
+    logger.debug(f"Successfully printed ASCII table with {len(table)} lines")
 
 
 def print_ascii_table_from_dataframe(df: pd.DataFrame, alignment: str = "left") -> None:
@@ -740,12 +896,18 @@ def print_ascii_table_from_dataframe(df: pd.DataFrame, alignment: str = "left") 
     """
     data, columns = None, None
     try:
+        logger.info(f"Converting DataFrame to ASCII table with {len(df)} rows and {len(df.columns)} columns")
         data, columns = get_data_from_pandas(df)
+        logger.debug(f"Successfully extracted data from DataFrame: {len(data)} rows, {len(columns)} columns")
     except Exception as e:
+        logger.error(f"Failed to extract data from DataFrame: {e}")
         raise ValueError(f"Invalid pandas dataframe: {e}.")
 
     if all([data, columns]):
+        logger.info("Data and columns extracted successfully, printing ASCII table")
         print_ascii_table(data, columns, alignment)
+    else:
+        logger.warning("No data or columns to display in ASCII table")
 
 
 def normalize_columns(cols: List[str]) -> List[str]:
@@ -766,12 +928,16 @@ def normalize_columns(cols: List[str]) -> List[str]:
         >>> normalize_columns(cols)
         ['name', 'age', 'address']
     """
+    logger.debug(f"Normalizing {len(cols)} column names")
     # test if the column names contain special characters
     if any([re.search("[^0-9a-zA-Z_]+", x) for x in cols]):
+        logger.warning(f"Column names contain special characters: {cols}")
         raise AttributeError(
             "Column names contain special characters that cannot be normalized."
         )
-    return [re.sub("[^0-9a-zA-Z_]+", "", x).lower() for x in cols]
+    normalized = [re.sub("[^0-9a-zA-Z_]+", "", x).lower() for x in cols]
+    logger.debug(f"Successfully normalized columns: {normalized}")
+    return normalized
 
 
 def print_columns(
@@ -794,14 +960,20 @@ def print_columns(
         >>> print_columns(cols, normalize=True, length=10, quotes=True)
         'name     ', 'age      ', 'address  '
     """
+    logger.debug(f"Printing {len(cols)} columns with options: normalize={normalize}, length={length}, quotes={quotes}")
+    
     if normalize:
+        logger.debug("Normalizing column names")
         cols = normalize_columns(cols)
 
     if quotes:
+        logger.debug("Adding quotes to column names")
         cols = [f"'{c}'" for c in cols]
 
     length = length or max([len(c) for c in cols])
+    logger.debug(f"Using column length: {length}")
 
     colstrings = ", ".join([c.ljust(length, " ") for c in cols])
-
+    
+    logger.info(f"Columns: {colstrings}")
     print(colstrings)
