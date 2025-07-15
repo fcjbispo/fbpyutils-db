@@ -1,0 +1,14 @@
+{
+  "app": {
+    "name": "FBPyUtils-DB",
+    "version": "0.1.1",
+    "environment": "dev",
+    "appcode": "FBPYUTILS-DB",
+    "year": 2025
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "log_file_path": "logs/app.log"
+  }
+}
