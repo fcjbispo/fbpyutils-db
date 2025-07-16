@@ -9,3 +9,4 @@
 **/__marimo__/*
 **/.sandbox.*
 /CKP_*.md
+logs/app.log
