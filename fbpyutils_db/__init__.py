@@ -967,7 +967,7 @@ def print_columns(
     print(colstrings)
 
 
-fbpyutils.setup("fbpyutils_db/app.json")
+fbpyutils.setup(os.path.join(os.path.dirname(__file__), "app.json"))
 
 env = fbpyutils.get_env()
 logger = fbpyutils.get_logger()
