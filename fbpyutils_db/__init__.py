@@ -27,19 +27,7 @@ from sqlalchemy.sql import exists
 from datetime import datetime, date
 import hashlib
 
-from fbpyutils.env import Env
-from fbpyutils.logging import Logger
-
-AppEnv = Env.load_config_from("fbpyutils_db/app.json")
-
-Logger.configure({
-    "app_name": AppEnv.APP.name,
-    "log_level": AppEnv.LOG_LEVEL,
-    "log_format": AppEnv.LOG_FORMAT,
-    "log_file_path": f"{os.path.sep.join([AppEnv.USER_APP_FOLDER, AppEnv.LOG_FILE])}"
-})
-
-logger = Logger
+import fbpyutils
 
 
 def _deal_with_nans(x: Any) -> Any:
@@ -977,3 +965,9 @@ def print_columns(
     
     logger.info(f"Columns: {colstrings}")
     print(colstrings)
+
+
+fbpyutils.setup()
+
+env = fbpyutils.get_env()
+logger = fbpyutils.get_logger()
