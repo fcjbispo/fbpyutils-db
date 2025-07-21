@@ -10,3 +10,4 @@
 **/.sandbox.*
 /CKP_*.md
 logs/app.log
+**/*.ipynb

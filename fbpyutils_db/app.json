@@ -1,9 +1,9 @@
 {
   "app": {
     "name": "FBPyUtils-DB",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "environment": "dev",
-    "appcode": "FBPYUTILS-DB",
+    "appcode": "FBPYUTILS_DB",
     "year": 2025
   },
   "logging": {
