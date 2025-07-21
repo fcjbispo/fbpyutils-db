@@ -1,9 +1,14 @@
 import os
 import pytest
 import pandas as pd
+import oracledb
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text, inspect
 
 from fbpyutils_db.database.operations import table_operation
+
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # Define as URLs de conexão a partir das variáveis de ambiente
 # Os testes serão parametrizados para rodar com as URLs que estiverem definidas.
@@ -32,6 +37,13 @@ def db_engine(request):
     """
     db_url = request.param
     try:
+        # Inicializa o cliente Oracle se a URL for para Oracle
+        if db_url.startswith("oracle"):
+            # Extrai o diretório de configuração da URL para inicializar o cliente
+            # Isso é uma suposição, ajuste o caminho se o seu Instant Client estiver em outro lugar
+            config_dir = r"S:\Oracle\InstantClientWin64"
+            oracledb.init_oracle_client(lib_dir=config_dir)
+
         engine = create_engine(db_url)
         # Testa a conexão
         with engine.connect():

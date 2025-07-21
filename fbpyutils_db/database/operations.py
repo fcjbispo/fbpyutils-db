@@ -205,7 +205,7 @@ def table_operation(
 
     result = {
         "operation": operation,
-        "table_name": ".".join([schema, table_name]),
+        "table_name": f"{schema}.{table_name}" if schema else table_name,
         "insertions": inserts,
         "updates": updates,
         "skips": skips,
