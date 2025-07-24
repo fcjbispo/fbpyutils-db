@@ -3,9 +3,9 @@ import hashlib
 from typing import List, Union
 
 # Importa _check_columns do módulo utils.validators
-from fbpyutils_db.utils.validators import _check_columns
+from fbpyutils_db.utils.validators import check_columns
 
-def _create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
+def create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
     """
     Creates a new hash column based on the values of an existing column in the dataframe.
     The hash is generated using MD5 and truncated to 'y' number of characters.
@@ -25,7 +25,7 @@ def _create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
     Example:
     --------
     >>> df = pd.DataFrame({'SomeColumn': ['value1', 'value2']})
-    >>> _create_hash_column(df['SomeColumn'])
+    >>> create_hash_column(df['SomeColumn'])
     0    b'f96b61d7...a3f8b1cdd'
     1    b'f96b61d7...a3f8b1cde'
     """
@@ -80,7 +80,7 @@ def add_hash_column(
     if columns and type(columns) != list:
         # logger.error("Invalid columns type provided")
         raise ValueError("When given, columns must be a list of column names")
-    if columns and not _check_columns(df, columns):
+    if columns and not check_columns(df, columns):
         # logger.error("One or more specified columns not found in DataFrame")
         raise ValueError("When given, all column names should exist in the dataframe.")
     
@@ -96,7 +96,7 @@ def add_hash_column(
         xdf = df.copy()
         # logger.debug("Using all columns for hash generation")
     
-    df[column_name] = _create_hash_column(xdf, length)
+    df[column_name] = create_hash_column(xdf, length)
     xcolumns = [column_name, *[c for c in df.columns if c != column_name]]
     
     # logger.info(f"Successfully added hash column '{column_name}' to DataFrame")

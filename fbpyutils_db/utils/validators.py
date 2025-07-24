@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import List
 
-def _check_columns(df: pd.DataFrame, columns: List[str]) -> bool:
+def check_columns(df: pd.DataFrame, columns: List[str]) -> bool:
     """Checks if all the specified columns exist in the dataframe.
 
     Parameters:

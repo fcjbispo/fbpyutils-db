@@ -41,7 +41,7 @@ def db_engine(request):
         if db_url.startswith("oracle"):
             # Extrai o diretório de configuração da URL para inicializar o cliente
             # Isso é uma suposição, ajuste o caminho se o seu Instant Client estiver em outro lugar
-            config_dir = r"S:\Oracle\InstantClientWin64"
+            config_dir = os.environ["DB_ORA_CONFIG_DIR"]
             oracledb.init_oracle_client(lib_dir=config_dir)
 
         engine = create_engine(db_url)

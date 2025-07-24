@@ -35,9 +35,9 @@ env = fbpyutils.get_env()
 logger = fbpyutils.get_logger()
 
 # Importações diretas para acesso via fbpyutils_db.function_name()
-from .utils.nan_handler import _deal_with_nans
-from .utils.validators import _check_columns
-from .hashing.hash_column import _create_hash_column, add_hash_column
+from .utils.nan_handler import deal_with_nans
+from .utils.validators import check_columns
+from .hashing.hash_column import create_hash_column, add_hash_column
 from .hashing.hash_index import add_hash_index
 from .data.isolate import isolate
 from .data.extract import get_data_from_pandas
@@ -54,29 +54,29 @@ from .database.types import get_columns_types, get_column_type
 def _deal_with_nans_deprecated(*args, **kwargs):
     warnings.warn(
         "_deal_with_nans is deprecated and will be removed in v0.4.0. "
-        "Use fbpyutils_db.utils.nan_handler._deal_with_nans instead.",
+        "Use fbpyutils_db.utils.nan_handler.deal_with_nans instead.",
         DeprecationWarning,
         stacklevel=2
     )
-    return _deal_with_nans(*args, **kwargs)
+    return deal_with_nans(*args, **kwargs)
 
 def _check_columns_deprecated(*args, **kwargs):
     warnings.warn(
         "_check_columns is deprecated and will be removed in v0.4.0. "
-        "Use fbpyutils_db.utils.validators._check_columns instead.",
+        "Use fbpyutils_db.utils.validators.check_columns instead.",
         DeprecationWarning,
         stacklevel=2
     )
-    return _check_columns(*args, **kwargs)
+    return check_columns(*args, **kwargs)
 
 def _create_hash_column_deprecated(*args, **kwargs):
     warnings.warn(
         "_create_hash_column is deprecated and will be removed in v0.4.0. "
-        "Use fbpyutils_db.hashing.hash_column._create_hash_column instead.",
+        "Use fbpyutils_db.hashing.hash_column.create_hash_column instead.",
         DeprecationWarning,
         stacklevel=2
     )
-    return _create_hash_column(*args, **kwargs)
+    return create_hash_column(*args, **kwargs)
 
 def add_hash_column_deprecated(*args, **kwargs):
     warnings.warn(

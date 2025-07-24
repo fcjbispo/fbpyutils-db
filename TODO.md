@@ -43,12 +43,20 @@ This file tracks the implementation and testing status of features in the `fbpyu
 - **Critical Gap**: Database operations module needs comprehensive testing
 
 ## Next Steps
-1. **High Priority**: Add unit tests for database-related functions
-   - `create_table`
-   - `table_operation`
-   - `create_index`
-   - `get_column_type`
-   - `get_columns_types`
+1. **High Priority**: 
+   - Add new features to `create_table` operation:
+         - Support for creating regular indexes
+         - Support for creating foreign keys
+         - Support for creating constraints
+   - Set foreign key constraint support on SQLite3 connections using PRAGMA foreign_keys = ON;
+   - Add `create_index` operation
+   - Check/Add parallel support on `table_operation`
+   - Add unit tests for database-related functions
+      - `create_table`
+      - `table_operation`
+      - `create_index`
+      - `get_column_type`
+      - `get_columns_types`
 
 2. **Medium Priority**: Add integration tests for database workflows
 3. **Low Priority**: Add performance benchmarks for large datasets

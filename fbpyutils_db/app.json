@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "FBPyUtils-DB",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "environment": "dev",
     "appcode": "FBPYUTILS_DB",
     "year": 2025

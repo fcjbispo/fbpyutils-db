@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, date
 from typing import Any
 
-def _deal_with_nans(x: Any) -> Any:
+def deal_with_nans(x: Any) -> Any:
     """
     This function handles null values and data types within a given input `x`. It checks if the input is a NaN value, None, an empty string, or a datetime/date with a NaT (not a time) value, and returns None for these cases. For other numeric types like float or int, it checks if the value is actually NaN. For datetime/date types, it checks if the value is a NaT value. If the input is of any other type, it returns the input as-is.
 

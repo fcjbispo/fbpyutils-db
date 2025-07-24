@@ -2,9 +2,9 @@ import pandas as pd
 from typing import List
 
 # Importa _create_hash_column do módulo hash_column
-from fbpyutils_db.hashing.hash_column import _create_hash_column
+from fbpyutils_db.hashing.hash_column import create_hash_column
 # Importa _check_columns do módulo utils.validators
-from fbpyutils_db.utils.validators import _check_columns
+from fbpyutils_db.utils.validators import check_columns
 
 def add_hash_index(
     df: pd.DataFrame, index_name: str = "id", length: int = 12, columns: List[str] = []
@@ -54,7 +54,7 @@ def add_hash_index(
     if columns and type(columns) != list:
         # logger.error("Invalid columns type provided")
         raise ValueError("When given, columns must be a list of column names")
-    if columns and not _check_columns(df, columns):
+    if columns and not check_columns(df, columns):
         # logger.error("One or more specified columns not found in DataFrame")
         raise ValueError("When given, all column names should exist in the dataframe.")
     
@@ -70,7 +70,7 @@ def add_hash_index(
         xdf = df.copy()
         # logger.debug("Using all columns for hash generation")
     
-    hash_df = _create_hash_column(xdf, length)
+    hash_df = create_hash_column(xdf, length)
     # logger.debug(f"Generated {len(hash_df)} hash values for index")
     
     # Set the hash string as the new index

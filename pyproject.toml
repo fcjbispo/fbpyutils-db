@@ -1,6 +1,6 @@
 [project]
 name = "fbpyutils-db"
-version = "0.2.0"
+version = "0.3.0"
 description = "Francisco Bispo's utilities for DB"
 readme = "README.md"
 authors = [

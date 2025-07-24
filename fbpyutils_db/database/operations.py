@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 from fbpyutils_db import logger
 
 # Importa funções de outros módulos
-from fbpyutils_db.utils.nan_handler import _deal_with_nans
+from fbpyutils_db.utils.nan_handler import deal_with_nans
 from fbpyutils_db.database.table import create_table
 
 def table_operation(
@@ -106,7 +106,7 @@ def table_operation(
             for i, row in dataframe.iterrows():
                 try:
                     values = {
-                        col: _deal_with_nans(row[col]) for col in dataframe.columns
+                        col: deal_with_nans(row[col]) for col in dataframe.columns
                     }
                     
                     logger.debug(f"Processing row {i}: {values}")
