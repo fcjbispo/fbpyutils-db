@@ -170,6 +170,18 @@ wheels = [
 ]
 
 [[package]]
+name = "concurrent-log-handler"
+version = "0.9.28"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "portalocker" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6b/ed/68b9c3a07a2331361a09a194e4375c4ee680a799391cfb1ca924ca2b6523/concurrent_log_handler-0.9.28.tar.gz", hash = "sha256:4cc27969b3420239bd153779266f40d9713ece814e312b7aa753ce62c6eacdb8", size = 30935, upload-time = "2025-06-10T19:02:15.622Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/a0/1331c3f12d95adc8d0385dc620001054c509db88376d2e17be36b6353020/concurrent_log_handler-0.9.28-py3-none-any.whl", hash = "sha256:65db25d05506651a61573937880789fc51c7555e7452303042b5a402fd78939c", size = 28983, upload-time = "2025-06-10T19:02:14.223Z" },
+]
+
+[[package]]
 name = "coverage"
 version = "7.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -329,9 +341,10 @@ wheels = [
 
 [[package]]
 name = "fbpyutils"
-version = "1.6.8"
-source = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.8-py3-none-any.whl" }
+version = "1.6.9"
+source = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.9-py3-none-any.whl" }
 dependencies = [
+    { name = "concurrent-log-handler" },
     { name = "freezegun" },
     { name = "ofxparse" },
     { name = "openpyxl" },
@@ -343,11 +356,12 @@ dependencies = [
     { name = "xlrd" },
 ]
 wheels = [
-    { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.8-py3-none-any.whl", hash = "sha256:2602fcc38c92a0e573edadca91ef81e95abb6396fc176000a165c12f3fdea3e4" },
+    { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.9-py3-none-any.whl", hash = "sha256:f32f316f9112ca8cc40ab37f62ba3cfa5852eea66de6385e84f948b7c0406828" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "concurrent-log-handler", specifier = ">=0.9.28" },
     { name = "freezegun", specifier = ">=1.5.1" },
     { name = "ofxparse", specifier = ">=0.21,<0.22" },
     { name = "openpyxl", specifier = ">=3.1.5,<4.0.0" },
@@ -361,10 +375,11 @@ requires-dist = [
 
 [[package]]
 name = "fbpyutils-db"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "fbpyutils" },
+    { name = "firebird-driver" },
     { name = "numpy" },
     { name = "oracledb" },
     { name = "pandas" },
@@ -387,7 +402,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fbpyutils", url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.8-py3-none-any.whl" },
+    { name = "fbpyutils", url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.9-py3-none-any.whl" },
+    { name = "firebird-driver", specifier = ">=1.0.0" },
     { name = "numpy" },
     { name = "oracledb", specifier = ">=3.2.0" },
     { name = "pandas" },
@@ -415,6 +431,31 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0a/10/c23352565a6544bdc5353e0b15fc1c563352101f30e24bf500207a54df9a/filelock-3.18.0.tar.gz", hash = "sha256:adbc88eabb99d2fec8c9c1b229b171f18afa655400173ddc653d5d01501fb9f2", size = 18075, upload-time = "2025-03-14T07:11:40.47Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/36/2a115987e2d8c300a974597416d9de88f2444426de9571f4b59b2cca3acc/filelock-3.18.0-py3-none-any.whl", hash = "sha256:c401f4f8377c4464e6db25fff06205fd89bdd83b65eb0488ed1b160f780e21de", size = 16215, upload-time = "2025-03-14T07:11:39.145Z" },
+]
+
+[[package]]
+name = "firebird-base"
+version = "2.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/20/af/1d71994451b866668087a62776e142af3f9233e58bbd803acacab3a67561/firebird_base-2.0.2.tar.gz", hash = "sha256:afaae994060b256346644528162de70adf72d9126d96f631185db3492a8cfdf1", size = 74628, upload-time = "2025-06-02T18:35:17.962Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e4/86/bcd70a5e19f1d990a3172f8cef9c1675ded47b549963150f142b3952911d/firebird_base-2.0.2-py3-none-any.whl", hash = "sha256:525d586ca4082efa4a9debf0481966ee8b6331b4fe044b5e27947d3191ccef17", size = 87407, upload-time = "2025-06-02T18:35:19.671Z" },
+]
+
+[[package]]
+name = "firebird-driver"
+version = "2.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "firebird-base" },
+    { name = "python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7a/38/ace1a5aef17398f60cac4c8fb7f8c5b7e52ab8af278d5a6bdf7d0fdb5d2a/firebird_driver-2.0.2.tar.gz", hash = "sha256:09db37329a127350b6fd072e0323ed80db10594ca62ea9f58a80174b26330629", size = 104715, upload-time = "2025-05-21T17:01:59.348Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e9/c3/9b09a8ddfb562bb23d599fe2a3634e9d2a79cd9d0a6a90e0aeeeb2d5789b/firebird_driver-2.0.2-py3-none-any.whl", hash = "sha256:e9548a93847ddd35748d1e70dab66ae833b85896e29764f558d827f9d5cbf2a9", size = 109536, upload-time = "2025-05-21T17:02:01.727Z" },
 ]
 
 [[package]]
@@ -973,6 +1014,18 @@ wheels = [
 ]
 
 [[package]]
+name = "portalocker"
+version = "3.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5e/77/65b857a69ed876e1951e88aaba60f5ce6120c33703f7cb61a3c894b8c1b6/portalocker-3.2.0.tar.gz", hash = "sha256:1f3002956a54a8c3730586c5c77bf18fae4149e07eaf1c29fc3faf4d5a3f89ac", size = 95644, upload-time = "2025-06-14T13:20:40.03Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/a6/38c8e2f318bf67d338f4d629e93b0b4b9af331f455f0390ea8ce4a099b26/portalocker-3.2.0-py3-none-any.whl", hash = "sha256:3cdc5f565312224bc570c49337bd21428bba0ef363bbcf58b9ef4a9f11779968", size = 22424, upload-time = "2025-06-14T13:20:38.083Z" },
+]
+
+[[package]]
 name = "prompt-toolkit"
 version = "3.0.51"
 source = { registry = "https://pypi.org/simple" }
@@ -982,6 +1035,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bb/6e/9d084c929dfe9e3bfe0c6a47e31f78a25c54627d64a66e884a8bf5474f1c/prompt_toolkit-3.0.51.tar.gz", hash = "sha256:931a162e3b27fc90c86f1b48bb1fb2c528c2761475e57c9c06de13311c7b54ed", size = 428940, upload-time = "2025-04-15T09:18:47.731Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ce/4f/5249960887b1fbe561d9ff265496d170b55a735b76724f10ef19f9e40716/prompt_toolkit-3.0.51-py3-none-any.whl", hash = "sha256:52742911fde84e2d423e2f9a4cf1de7d7ac4e51958f648d9540e0fb8db077b07", size = 387810, upload-time = "2025-04-15T09:18:44.753Z" },
+]
+
+[[package]]
+name = "protobuf"
+version = "5.29.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/29/d09e70352e4e88c9c7a198d5645d7277811448d76c23b00345670f7c8a38/protobuf-5.29.5.tar.gz", hash = "sha256:bc1463bafd4b0929216c35f437a8e28731a2b7fe3d98bb77a600efced5a15c84", size = 425226, upload-time = "2025-05-28T23:51:59.82Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/11/6e40e9fc5bba02988a214c07cf324595789ca7820160bfd1f8be96e48539/protobuf-5.29.5-cp310-abi3-win32.whl", hash = "sha256:3f1c6468a2cfd102ff4703976138844f78ebd1fb45f49011afc5139e9e283079", size = 422963, upload-time = "2025-05-28T23:51:41.204Z" },
+    { url = "https://files.pythonhosted.org/packages/81/7f/73cefb093e1a2a7c3ffd839e6f9fcafb7a427d300c7f8aef9c64405d8ac6/protobuf-5.29.5-cp310-abi3-win_amd64.whl", hash = "sha256:3f76e3a3675b4a4d867b52e4a5f5b78a2ef9565549d4037e06cf7b0942b1d3fc", size = 434818, upload-time = "2025-05-28T23:51:44.297Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/73/10e1661c21f139f2c6ad9b23040ff36fee624310dc28fba20d33fdae124c/protobuf-5.29.5-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:e38c5add5a311f2a6eb0340716ef9b039c1dfa428b28f25a7838ac329204a671", size = 418091, upload-time = "2025-05-28T23:51:45.907Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/04/98f6f8cf5b07ab1294c13f34b4e69b3722bb609c5b701d6c169828f9f8aa/protobuf-5.29.5-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:fa18533a299d7ab6c55a238bf8629311439995f2e7eca5caaff08663606e9015", size = 319824, upload-time = "2025-05-28T23:51:47.545Z" },
+    { url = "https://files.pythonhosted.org/packages/85/e4/07c80521879c2d15f321465ac24c70efe2381378c00bf5e56a0f4fbac8cd/protobuf-5.29.5-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:63848923da3325e1bf7e9003d680ce6e14b07e55d0473253a690c3a8b8fd6e61", size = 319942, upload-time = "2025-05-28T23:51:49.11Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/cc/7e77861000a0691aeea8f4566e5d3aa716f2b1dece4a24439437e41d3d25/protobuf-5.29.5-py3-none-any.whl", hash = "sha256:6cf42630262c59b2d8de33954443d94b746c952b01434fc58a417fdbd2e84bd5", size = 172823, upload-time = "2025-05-28T23:51:58.157Z" },
 ]
 
 [[package]]

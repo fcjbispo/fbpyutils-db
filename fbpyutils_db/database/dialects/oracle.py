@@ -1,7 +1,34 @@
 from sqlalchemy.engine import Engine
 from typing import Any, Dict
 
+from sqlalchemy import ForeignKeyConstraint, CheckConstraint, UniqueConstraint
 from fbpyutils_db import logger
+from fbpyutils_db.database.dialects.base import BaseDialect
+
+
+class OracleDialect(BaseDialect):
+    """
+    A class to represent the Oracle database dialect.
+    """
+
+    def create_foreign_key(self, **kwargs: Any) -> Any:
+        """
+        Creates a foreign key constraint.
+        """
+        return ForeignKeyConstraint(**kwargs)
+
+    def create_constraint(self, **kwargs: Any) -> Any:
+        """
+        Creates a constraint.
+        """
+        constraint_type = kwargs.pop("type", None)
+        if constraint_type == "check":
+            return CheckConstraint(**kwargs)
+        elif constraint_type == "unique":
+            return UniqueConstraint(**kwargs)
+        else:
+            raise ValueError(f"Unsupported constraint type: {constraint_type}")
+
 
 def get_oracle_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """

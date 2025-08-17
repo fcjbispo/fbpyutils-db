@@ -15,6 +15,7 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "oracledb>=3.2.0",
     "psycopg[binary]>=3.2.9",
+    "firebird-driver>=1.0.0",
 ]
 
 [build-system]
@@ -34,4 +35,4 @@ dev = [
 ]
 
 [tool.uv.sources]
-fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.8-py3-none-any.whl" }
+fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.9-py3-none-any.whl" }

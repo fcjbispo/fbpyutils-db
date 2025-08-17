@@ -1,7 +1,55 @@
 from sqlalchemy.engine import Engine
 from typing import Any, Dict
 
+from sqlalchemy import ForeignKeyConstraint, CheckConstraint, UniqueConstraint
 from fbpyutils_db import logger
+from fbpyutils_db.database.dialects.base import BaseDialect
+
+
+import os
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+class SQLiteDialect(BaseDialect):
+    """
+    A class to represent the SQLite database dialect.
+    """
+
+    def __init__(self, connection: Any):
+        """
+        Initializes the SQLiteDialect.
+
+        Args:
+            connection: The database connection object.
+        """
+        super().__init__(connection)
+        if os.getenv("FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON", "false").lower() == "true":
+            event.listen(self.connection, "connect", self._fk_pragma_on)
+
+    def _fk_pragma_on(self, dbapi_con, con_record):
+        """
+        Enables foreign key support in SQLite.
+        """
+        dbapi_con.execute("pragma foreign_keys=ON")
+
+    def create_foreign_key(self, **kwargs: Any) -> Any:
+        """
+        Creates a foreign key constraint.
+        """
+        return ForeignKeyConstraint(**kwargs)
+
+    def create_constraint(self, **kwargs: Any) -> Any:
+        """
+        Creates a constraint.
+        """
+        constraint_type = kwargs.pop("type", None)
+        if constraint_type == "check":
+            return CheckConstraint(**kwargs)
+        elif constraint_type == "unique":
+            return UniqueConstraint(**kwargs)
+        else:
+            raise ValueError(f"Unsupported constraint type: {constraint_type}")
+
 
 def get_sqlite_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """

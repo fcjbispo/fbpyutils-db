@@ -10,11 +10,12 @@
 2. **Updated TODO.md**: Comprehensive task tracking with implementation status
 3. **Enhanced README.md**: Added documentation links and improved structure
 4. **Memory Bank**: Updated to reflect current project state
+5. **Updated PLAN_RELEASE_V0.3.0.md**: Added implementation status and next steps for FirebirdSQL support
 
 ## Next Steps
-1. **High Priority**: Add unit tests for database-related functions (5 functions)
-2. **Medium Priority**: Add integration tests for database workflows
-3. **Low Priority**: Performance benchmarks for large datasets
+1. **High Priority**: Implement unit tests for FirebirdSQL and database functions (5 functions)
+2. **Medium Priority**: Add parallel support to `table_operation` and integration tests
+3. **Low Priority**: Performance benchmarks and final documentation updates
 
 ## Active Decisions
 - **Testing Strategy**: Use pytest with mocking for database operations

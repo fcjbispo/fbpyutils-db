@@ -103,13 +103,14 @@ def table_operation(
             rows = 0
             processed_rows = 0
             
+            total_rows = len(dataframe)
             for i, row in dataframe.iterrows():
                 try:
                     values = {
                         col: deal_with_nans(row[col]) for col in dataframe.columns
                     }
                     
-                    logger.debug(f"Processing row {i}: {values}")
+                    logger.debug(f"Processing row {i}/{total_rows}: {values}")
 
                     row_exists = False
                     step = "check existence"
@@ -181,7 +182,7 @@ def table_operation(
                         logger.info(f"Processed {processed_rows}/{len(dataframe)} rows")
                         
                 except Exception as e:
-                    logger.error(f"Error processing row {i}: {str(e)}")
+                    logger.error(f"Error processing row {i}/{total_rows}: {str(e)}")
                     failures.append(
                         {
                             "step": step,

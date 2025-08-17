@@ -57,6 +57,7 @@ This file tracks the implementation and testing status of features in the `fbpyu
       - `create_index`
       - `get_column_type`
       - `get_columns_types`
+   - Add support to FirebirdSQL Databases
 
 2. **Medium Priority**: Add integration tests for database workflows
 3. **Low Priority**: Add performance benchmarks for large datasets

@@ -7,6 +7,17 @@ def create_index(
     name: str, table: Selectable, keys: List[str], unique: bool = True
 ) -> Index:
     """Create an index on the specified keys for a given table.
+    
+    Args:
+        name (str): The name of the index to be created.
+        table (sqlalchemy.sql.expression.Selectable): The table on which to create the index.
+        keys (list of str): Column names that should be part of the index.
+        unique (bool, optional): Whether the index should enforce uniqueness. Default is True.
+    
+    Returns:
+        sqlalchemy.Index: The created index object.
+    """
+    """Create an index on the specified keys for a given table.
 
     Args:
         name (str): The name of the index to be created.
