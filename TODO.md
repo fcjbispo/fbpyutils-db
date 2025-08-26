@@ -19,9 +19,9 @@ This file tracks the implementation and testing status of features in the `fbpyu
 | `_create_hash_column` | ✅ | ✅ | ⚠️ | 100% | Internal function, tested via other functions |
 
 | **Database Operations** |
-| `create_table` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `create_table` | ✅ | ✅ | ❌ | 0% | **V0.3.0**: Enhanced with indexes, FKs, constraints support |
 | `table_operation` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
-| `create_index` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
+| `create_index` | ✅ | ✅ | ❌ | 0% | **V0.3.0**: New standalone function for all dialects |
 | `get_column_type` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
 | `get_columns_types` | ✅ | ✅ | ❌ | 0% | Implemented, needs tests |
 
@@ -30,6 +30,21 @@ This file tracks the implementation and testing status of features in the `fbpyu
 | `print_ascii_table` | ✅ | ✅ | ⚠️ | 100% | Tested via `print_ascii_table_from_dataframe` |
 | `print_ascii_table_from_dataframe` | ✅ | ✅ | ✅ | 100% | Complete with tests |
 | `print_columns` | ✅ | ✅ | ✅ | 100% | Complete with tests |
+
+## V0.3.0 - New Features Implemented ✅
+
+### Enhanced Database Operations
+- **Multi-dialect support**: Full support for SQLite, PostgreSQL, Oracle, and FirebirdSQL databases
+- **Advanced table creation**: Support for indexes, foreign keys, and constraints in all supported dialects
+- **Foreign key support**: Optional foreign key support for SQLite3 via environment variable `FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON`
+- **FirebirdSQL integration**: Complete FirebirdSQL dialect implementation with constraint support
+- **Standalone index creation**: New `create_index` function for all supported database dialects
+
+### Database Dialect Support Status
+- **SQLite**: ✅ Complete with indexes, foreign keys (optional), and constraints
+- **PostgreSQL**: ✅ Complete with indexes, foreign keys, and constraints
+- **Oracle**: ✅ Complete with indexes, foreign keys, and constraints
+- **FirebirdSQL**: ✅ Complete with indexes, foreign keys, and constraints
 
 ## Legend
 - ✅: Yes - Fully implemented and tested
@@ -43,21 +58,14 @@ This file tracks the implementation and testing status of features in the `fbpyu
 - **Critical Gap**: Database operations module needs comprehensive testing
 
 ## Next Steps
-1. **High Priority**: 
-   - Add new features to `create_table` operation:
-         - Support for creating regular indexes
-         - Support for creating foreign keys
-         - Support for creating constraints
-   - Set foreign key constraint support on SQLite3 connections using PRAGMA foreign_keys = ON;
-   - Add `create_index` operation
-   - Check/Add parallel support on `table_operation`
+1. **High Priority**:
    - Add unit tests for database-related functions
-      - `create_table`
+      - `create_table` (enhanced with indexes, FKs, constraints)
       - `table_operation`
-      - `create_index`
+      - `create_index` (new standalone function)
       - `get_column_type`
       - `get_columns_types`
-   - Add support to FirebirdSQL Databases
+   - Check/Add parallel support on `table_operation`
 
 2. **Medium Priority**: Add integration tests for database workflows
 3. **Low Priority**: Add performance benchmarks for large datasets
@@ -70,6 +78,7 @@ This file tracks the implementation and testing status of features in the `fbpyu
 
 ## Documentation Status
 - ✅ SPEC.md: Created with complete API specification
-- ✅ DOC.md: Comprehensive documentation with examples
-- ✅ README.md: Updated with project overview and links
+- ✅ DOC.md: **V0.3.0** - Updated with new database features and multi-dialect support
+- ✅ README.md: **V0.3.0** - Updated with new features overview
+- ✅ TODO.md: **V0.3.0** - Updated with implementation status
 - ✅ Memory Bank: Complete with VIBE guidelines

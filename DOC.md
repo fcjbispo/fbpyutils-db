@@ -11,12 +11,25 @@ This project provides a collection of Python utility functions focused on databa
 - Normalizing column names (`normalize_columns`).
 - Isolating DataFrame rows based on group criteria (`isolate`).
 - Adding hash-based columns and indexes to DataFrames (`add_hash_column`, `add_hash_index`).
-- Creating database tables from DataFrames (`create_table`).
+- Creating database tables from DataFrames with advanced features (`create_table`).
 - Performing bulk database operations (append, upsert, replace) (`table_operation`).
 - Managing database indexes (`create_index`).
 - Mapping Pandas types to SQLAlchemy types (`get_column_type`, `get_columns_types`).
 - Extracting data from DataFrames (`get_data_from_pandas`).
 - Generating ASCII table representations for display (`ascii_table`, `print_ascii_table`, `print_ascii_table_from_dataframe`).
+
+## Version 0.3.0 - New Features
+
+### Enhanced Database Support
+- **Multi-dialect support**: Full support for SQLite, PostgreSQL, Oracle, and FirebirdSQL databases
+- **Advanced table creation**: Support for indexes, foreign keys, and constraints in all supported dialects
+- **Foreign key support**: Optional foreign key support for SQLite3 via environment variable
+- **FirebirdSQL integration**: Complete FirebirdSQL dialect implementation with constraint support
+
+### New Database Operations
+- **create_index**: Standalone index creation function for all supported database dialects
+- **Enhanced create_table**: Support for creating indexes, foreign keys, and constraints during table creation
+- **Multi-dialect compatibility**: All database functions work seamlessly across SQLite, PostgreSQL, Oracle, and FirebirdSQL
 
 ## Installation
 
@@ -26,6 +39,19 @@ pip install fbpyutils-db
 *Note: The exact package name on PyPI might differ. Please verify the correct name if installation fails. The command `uv pip install .` can be used for local development installation.*
 
 ## Usage
+
+### Database Dialect Support
+
+FBPyUtils-DB supports multiple database dialects with full compatibility for advanced features:
+
+- **SQLite**: Lightweight file-based database with optional foreign key support
+- **PostgreSQL**: Robust, production-ready database with full constraint support
+- **Oracle**: Enterprise-grade database with advanced constraint capabilities
+- **FirebirdSQL**: Cross-platform database with complete constraint support
+
+### Environment Variables
+
+- **FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON**: Set to `true` to enable foreign key constraints in SQLite3
 
 ### Functions
 
@@ -125,20 +151,30 @@ for line in table_lines:
 
 #### `create_index`
 
-Creates a SQLAlchemy Index object for a given table and keys.
+Creates a SQLAlchemy Index object for a given table and keys, supporting all database dialects (SQLite, PostgreSQL, Oracle, FirebirdSQL).
 
 ```python
 from sqlalchemy import Table, MetaData, Column, Integer, String
 from fbpyutils_db import create_index
 
+# Basic index creation
 metadata = MetaData()
 my_table = Table('my_table', metadata,
                  Column('id', Integer, primary_key=True),
                  Column('name', String),
                  Column('value', Integer))
 
-index = create_index('my_index_uk', my_table, ['name'], unique=True)
-# index is a sqlalchemy.schema.Index object
+# Create unique index
+unique_index = create_index('idx_name_unique', my_table, ['name'], unique=True)
+# Creates a unique index on the 'name' column
+
+# Create standard (non-unique) index
+standard_index = create_index('idx_value', my_table, ['value'], unique=False)
+# Creates a standard index on the 'value' column
+
+# Create composite index
+composite_index = create_index('idx_name_value', my_table, ['name', 'value'])
+# Creates a composite index on both 'name' and 'value' columns
 ```
 
 **Parameters:**
@@ -146,27 +182,68 @@ index = create_index('my_index_uk', my_table, ['name'], unique=True)
 - `name` (str): The name of the index to be created.
 - `table` (Selectable): The SQLAlchemy table on which to create the index.
 - `keys` (List[str]): A list of column names that should be part of the index.
-- `unique` (bool, optional): Whether the index should enforce uniqueness. Defaults to True.
+- `unique` (bool, optional): Whether the index should enforce uniqueness. Defaults to False.
 
 **Returns:**
 
 - Index: The created SQLAlchemy Index object.
 
+**Supported Database Dialects:**
+- **SQLite**: Supports standard and unique indexes
+- **PostgreSQL**: Supports standard, unique, and composite indexes
+- **Oracle**: Supports standard, unique, and composite indexes
+- **FirebirdSQL**: Supports standard, unique, and composite indexes with proper naming conventions
+
 ---
 
 #### `create_table`
 
-Creates a table in the database using a pandas DataFrame as a schema.
+Creates a table in the database using a pandas DataFrame as a schema with support for indexes, foreign keys, and constraints across all supported database dialects (SQLite, PostgreSQL, Oracle, FirebirdSQL).
 
 ```python
 from sqlalchemy import create_engine
 import pandas as pd
 from fbpyutils_db import create_table
 
+# Basic table creation
 df = pd.DataFrame({'id': [1, 2], 'name': ['A', 'B']})
 engine = create_engine('sqlite:///:memory:') # Example with in-memory SQLite
 create_table(df, engine, 'my_new_table', keys=['id'], index='primary')
-# Creates the 'my_new_table' table in the database connected by the engine
+# Creates the 'my_new_table' table with primary key in the database
+
+# Advanced table creation with indexes, foreign keys, and constraints
+df = pd.DataFrame({
+    'user_id': [1, 2, 3],
+    'username': ['john', 'alice', 'bob'],
+    'email': ['john@example.com', 'alice@example.com', 'bob@example.com']
+})
+
+# Define foreign keys
+foreign_keys = [
+    {
+        'name': 'fk_users_department',
+        'columns': ['department_id'],
+        'refcolumns': ['id'],
+        'table_name': 'departments'
+    }
+]
+
+# Define constraints
+constraints = [
+    {'type': 'unique', 'name': 'uk_users_email', 'columns': ['email']},
+    {'type': 'check', 'name': 'ck_users_username', 'conditions': "username != ''"}
+]
+
+create_table(
+    df,
+    engine,
+    'users',
+    keys=['user_id'],
+    index='primary',
+    foreign_keys=foreign_keys,
+    constraints=constraints
+)
+# Creates the 'users' table with primary key, foreign key, and constraints
 ```
 
 **Parameters:**
@@ -177,10 +254,19 @@ create_table(df, engine, 'my_new_table', keys=['id'], index='primary')
 - `schema` (str, optional): The name of the schema where the table will be created. Defaults to None.
 - `keys` (List[str], optional): List of column names to use as keys for index/primary key creation. Defaults to [].
 - `index` (str, optional): Type of index to create using the `keys` ('standard', 'unique', 'primary'). Defaults to None (no index).
+- `foreign_keys` (List[dict], optional): List of foreign key definitions. Each dict should contain 'name', 'columns', 'refcolumns', and optionally 'table_name'. Defaults to [].
+- `constraints` (List[dict], optional): List of constraint definitions. Each dict should contain 'type' ('unique', 'check'), 'name', and 'columns' or 'conditions'. Defaults to [].
+- `metadata` (MetaData, optional): SQLAlchemy MetaData object to use. If None, a new one will be created.
 
 **Returns:**
 
 - None
+
+**Supported Database Dialects:**
+- **SQLite**: Supports indexes, foreign keys (when `FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON=true`), and constraints
+- **PostgreSQL**: Full support for indexes, foreign keys, and constraints
+- **Oracle**: Full support for indexes, foreign keys, and constraints
+- **FirebirdSQL**: Full support for indexes, foreign keys, and constraints with proper naming requirements
 
 ---
 

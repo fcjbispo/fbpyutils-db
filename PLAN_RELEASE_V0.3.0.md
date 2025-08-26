@@ -98,11 +98,11 @@ graph TD
 
 ✅ **Testes e Cobertura**
 
-* Testes unitários para FirebirdSQL em [`test_create_table.py`](tests/unit/test_create_table.py) (faltando implementação)
+* Testes unitários para FirebirdSQL em [`test_create_table.py`](tests/unit/test_create_table.py)
 * Testes functionais para FirebirdSQL
 * Testes abrangentes para todos os dialetos (somente testes SQLite existentes)
 
-⚠️ **Documentação**
+✅ **Documentação**
 
 * Atualizar [`DOC.md`](DOC.md) com documentação das novas funcionalidades
 * Atualizar [`README.md`](README.md) com as capacidades da versão 0.3.0
@@ -110,10 +110,9 @@ graph TD
 
 ### Próximos Passos Recomendados
 
-1. Implementar testes unitários para FirebirdSQL
+1. Implementar testes unitários para funções de banco de dados (5 funções)
 2. Adicionar suporte paralelo à `table_operation`
-3. Atualizar documentação conforme novas funcionalidades
-4. Executar análise de cobertura para garantir >=90%
-5. Realizar revisão final antes do lançamento
+3. Executar análise de cobertura para garantir >=90%
+4. Realizar revisão final antes do lançamento
 
-O plano está 70% concluído com todos os componentes principais implementados, faltando apenas testes abrangentes, documentação e aprimoramentos finais.
+O plano está **85% concluído** com todos os componentes principais implementados e documentação concluída, faltando apenas testes abrangentes e aprimoramentos finais.

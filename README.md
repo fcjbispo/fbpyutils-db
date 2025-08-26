@@ -10,12 +10,25 @@ This project provides a collection of Python utility functions focused on databa
 - Normalizing column names (`normalize_columns`).
 - Isolating DataFrame rows based on group criteria (`isolate`).
 - Adding hash-based columns and indexes to DataFrames (`add_hash_column`, `add_hash_index`).
-- Creating database tables from DataFrames (`create_table`).
+- Creating database tables from DataFrames with advanced features (`create_table`).
 - Performing bulk database operations (append, upsert, replace) (`table_operation`).
 - Managing database indexes (`create_index`).
 - Mapping Pandas types to SQLAlchemy types (`get_column_type`, `get_columns_types`).
 - Extracting data from DataFrames (`get_data_from_pandas`).
 - Generating ASCII table representations for display (`ascii_table`, `print_ascii_table`, etc.).
+
+## Version 0.3.0 - New Features
+
+### Enhanced Database Support
+- **Multi-dialect support**: Full support for SQLite, PostgreSQL, Oracle, and FirebirdSQL databases
+- **Advanced table creation**: Support for indexes, foreign keys, and constraints in all supported dialects
+- **Foreign key support**: Optional foreign key support for SQLite3 via environment variable
+- **FirebirdSQL integration**: Complete FirebirdSQL dialect implementation with constraint support
+
+### New Database Operations
+- **create_index**: Standalone index creation function for all supported database dialects
+- **Enhanced create_table**: Support for creating indexes, foreign keys, and constraints during table creation
+- **Multi-dialect compatibility**: All database functions work seamlessly across SQLite, PostgreSQL, Oracle, and FirebirdSQL
 
 ## Documentation
 
