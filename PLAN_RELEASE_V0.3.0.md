@@ -102,11 +102,6 @@ graph TD
 * Testes functionais para FirebirdSQL
 * Testes abrangentes para todos os dialetos (somente testes SQLite existentes)
 
-⚠️ **Aprimoramentos Técnicos**
-
-* Implementar suporte paralelo em [`operations.py`](fbpyutils_db/database/operations.py:12) (faltando lógica de paralelismo)
-* Implementar testes funcionais para operações paralelas em `table_operation`
-
 ⚠️ **Documentação**
 
 * Atualizar [`DOC.md`](DOC.md) com documentação das novas funcionalidades
