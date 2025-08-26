@@ -14,6 +14,7 @@ from sqlalchemy.engine import Engine
 
 from sqlalchemy import ForeignKeyConstraint, CheckConstraint, UniqueConstraint
 from fbpyutils_db.database.dialects.base import BaseDialect
+from fbpyutils_db import logger
 
 
 class FirebirdDialect(BaseDialect):
@@ -64,49 +65,24 @@ class FirebirdDialect(BaseDialect):
 
 def is_firebird(engine: Engine) -> bool:
     """
-    Checks if the provided SQLAlchemy engine is for Firebird.
+    Checks if the given SQLAlchemy engine is a Firebird engine.
 
     Args:
         engine (sqlalchemy.engine.Engine): The SQLAlchemy engine.
 
     Returns:
-        bool: True if the engine is for Firebird, False otherwise.
+        bool: True if the engine is Firebird, False otherwise.
     """
-    return engine.name == "firebird"
+    logger.debug(f"Checking if engine is Firebird. engine.name: '{engine.name}', engine.dialect.name: '{engine.dialect.name}'")
+    return any(["firebird" in e for e in [engine.dialect.name, engine.name]])
 
 
 def get_firebird_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """
-    Returns a Firebird-specific SQL query.
-
-    Args:
-        query_name (str): The name of the query to retrieve.
-        **kwargs: Arbitrary keyword arguments for query formatting.
-
-    Returns:
-        str: The Firebird-specific SQL query.
-
-    Raises:
-        ValueError: If the query name is unknown.
+    Returns a Firebird-specific SQL query based on the query name.
+    This is a placeholder and will raise NotImplementedError for now.
     """
-    queries = {
-        "upsert": """
-            MERGE INTO {table_name} target
-            USING (SELECT {values_select} FROM DUAL) source
-            ON ({on_conditions})
-            WHEN MATCHED THEN UPDATE SET {updates}
-            WHEN NOT MATCHED THEN INSERT ({columns}) VALUES ({values})
-        """,
-        "create_table": """
-            CREATE TABLE {table_name} (
-                {columns}
-            )
-        """,
-        "create_index": """
-            CREATE {unique} INDEX {index_name}
-            ON {table_name} ({columns})
-        """
-    }
-    if query_name in queries:
-        return queries[query_name].format(**kwargs)
-    raise ValueError(f"Unknown query for Firebird dialect: {query_name}")
+    raise NotImplementedError(
+        f"Firebird-specific query '{query_name}' is not yet implemented."
+    )
+

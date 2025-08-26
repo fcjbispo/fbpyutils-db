@@ -18,6 +18,8 @@ def table_operation(
     keys: list[str] = None,
     index: str = None,
     commit_at: int = 50,
+    parallel: bool = False,
+    max_workers: int = None,
 ) -> Dict[str, Any]:
     """
     Perform upsert or replace operation on a table based on the provided dataframe.
@@ -33,6 +35,8 @@ def table_operation(
             If an index must be created, index be in 'standard' or 'unique'.
         commit_at (int, optional): Number of rows to commit in the database at once. Defaults to 50.
             Must be > 1 and < total rows of the dataframe.
+        parallel (bool, optional): Whether to process rows in parallel using multiple workers. Defaults to False.
+            NOTE: Parallel processing is currently disabled due to SQLAlchemy connection issues.
 
     Returns:
         dict: A dictionary containing information about the performed operation.
@@ -40,7 +44,6 @@ def table_operation(
     """
     logger.info(f"Starting table operation: {operation}")
     logger.debug(f"Table: {table_name}, Schema: {schema}")
-    logger.debug(f"DataFrame shape: {dataframe.shape}")
     logger.debug(f"Keys: {keys}, Index: {index}, Commit at: {commit_at}")
     
     # Check parameters
@@ -48,9 +51,11 @@ def table_operation(
         logger.error(f"Invalid operation: {operation}")
         raise ValueError("Invalid operation. Valid values: append|upsert|replace.")
 
-    if not type(dataframe) == pd.DataFrame:
+    if not isinstance(dataframe, pd.DataFrame):
         logger.error("Invalid DataFrame type provided")
         raise ValueError("Dataframe must be a Pandas DataFrame.")
+    
+    logger.debug(f"DataFrame shape: {dataframe.shape}") # Moved this line after DataFrame validation
 
     if operation == "upsert" and not keys:
         logger.error("Missing keys parameter for upsert operation")
@@ -66,10 +71,13 @@ def table_operation(
             "If an index will be created, it must be any of standard|unique|primary."
         )
 
-    commit_at = commit_at or 50
-    if not type(commit_at) == int or (commit_at < 1 and commit_at > len(dataframe)):
+    if not isinstance(commit_at, int) or commit_at < 1:
         logger.error(f"Invalid commit_at value: {commit_at}")
-        raise ValueError("Commit At must be > 1 and < total rows of DataFrame.")
+        raise ValueError("Commit At must be a positive integer.")
+
+    if not type(parallel) == bool:
+        logger.error(f"Invalid parallel type: {parallel}")
+        raise ValueError("Parallel must be a boolean value.")
 
     # Check if the table exists in the database, if not create it
     table_exists = inspect(engine).has_table(table_name, schema=schema)
@@ -87,9 +95,12 @@ def table_operation(
     inserts = 0
     updates = 0
     skips = 0
+    processed_rows = 0 # Initialize processed_rows here
     failures = []
     
     logger.info(f"Starting {operation} operation on {len(dataframe)} rows")
+
+    total_rows = len(dataframe) # Initialize total_rows here
 
     try:
         with engine.connect() as conn:
@@ -99,106 +110,173 @@ def table_operation(
                 conn.execute(table.delete())
                 conn.commit()
                 logger.debug("Table cleared successfully")
-
-            rows = 0
-            processed_rows = 0
-            
-            total_rows = len(dataframe)
-            for i, row in dataframe.iterrows():
-                try:
-                    values = {
-                        col: deal_with_nans(row[col]) for col in dataframe.columns
-                    }
+                
+                # Parallel processing implementation
+                if parallel:
+                    # Determine max_workers if not specified
+                    if max_workers is None:
+                        import os
+                        max_workers = min(32, (os.cpu_count() or 1) + 4)
                     
-                    logger.debug(f"Processing row {i}/{total_rows}: {values}")
+                    logger.info(f"Processing {total_rows} rows in parallel with {max_workers} workers")
+                    from concurrent.futures import ThreadPoolExecutor
+                    
+                    # Function to process a single row with its own connection
+                    def process_row(row_data, row_idx, table, keys, operation, engine):
+                        try:
+                            with engine.connect() as worker_conn:
+                                values = {
+                                    col: deal_with_nans(row_data[col]) for col in dataframe.columns
+                                }
+                                
+                                row_exists = False
+                                if keys:
+                                    exists_query = table.select().where(
+                                        text(" AND ".join([f"{col} = :{col}" for col in keys]))
+                                    ).params(**values)
+                                    row_exists = worker_conn.execute(exists_query).fetchone() is not None
+                                
+                                if row_exists:
+                                    if operation == "upsert":
+                                        update_values = {
+                                            k: values[k] for k in values.keys() if k not in keys
+                                        }
+                                        update_stmt = table.update().where(
+                                            text(" AND ".join([f"{col}=:{col}" for col in keys]))
+                                        ).values(**update_values)
+                                        worker_conn.execute(update_stmt)
+                                        return ("update", row_idx, values)
+                                    return ("skip", row_idx, values)
+                                
+                                insert_stmt = table.insert().values(**values)
+                                worker_conn.execute(insert_stmt)
+                                return ("insert", row_idx, values)
+                        except Exception as e:
+                            return ("error", row_idx, values, str(e))
+                    
+                    # Process all rows in parallel
+                    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        futures = [
+                            executor.submit(process_row, row, i, table, keys, operation, engine)
+                            for i, row in dataframe.iterrows()
+                        ]
+                        
+                        for future in futures:
+                            result = future.result()
+                            if result[0] == "insert":
+                                inserts += 1
+                            elif result[0] == "update":
+                                updates += 1
+                            elif result[0] == "skip":
+                                skips += 1
+                            else:
+                                failures.append({
+                                    "step": "parallel processing",
+                                    "row": result[1],
+                                    "error": result[3] if len(result) > 3 else "Unknown error"
+                                })
+                else:
+                    # If parallel is False, the sequential processing will be handled below
+                    pass # No-op, as sequential processing is now outside this block
 
-                    row_exists = False
-                    step = "check existence"
-                    if keys:
-                        # Check if row exists in the table based on keys
-                        exists_query = (
-                            table.select()
-                            .where(
-                                exists(
-                                    table.select().where(
-                                        text(
-                                            " AND ".join(
-                                                [f"{col} = :{col}" for col in keys]
+            # Sequential processing (original logic, now outside the 'if operation == "replace"' block)
+            if not parallel:
+                rows = 0
+                for i, row in dataframe.iterrows():
+                    try:
+                        values = {
+                            col: deal_with_nans(row[col]) for col in dataframe.columns
+                        }
+                    
+                        logger.debug(f"Processing row {i}/{total_rows}: {values}")
+                        
+                        row_exists = False
+                        step = "check existence"
+                        if keys:
+                            # Check if row exists in the table based on keys
+                            exists_query = (
+                                table.select()
+                                .where(
+                                    exists(
+                                        table.select().where(
+                                            text(
+                                                " AND ".join(
+                                                    [f"{col} = :{col}" for col in keys]
+                                                )
                                             )
                                         )
                                     )
                                 )
+                                .params(**values)
                             )
-                            .params(**values)
-                        )
-                        if conn.execute(exists_query).fetchone():
-                            row_exists = True
-                            logger.debug(f"Row {i} exists based on keys {keys}")
-                    
-                    if row_exists:
-                        if operation == "upsert":
-                            # Perform update
-                            step = "replace with update"
-                            update_values = {
-                                k: values[k] for k in values.keys() if k not in keys
-                            }
-                            
-                            logger.debug(f"Updating row {i} with values: {update_values}")
+                            if conn.execute(exists_query).fetchone():
+                                row_exists = True
+                                logger.debug(f"Row {i} exists based on keys {keys}")
+                        
+                        if row_exists:
+                            if operation == "upsert":
+                                # Perform update
+                                step = "replace with update"
+                                update_values = {
+                                    k: values[k] for k in values.keys() if k not in keys
+                                }
+                                
+                                logger.debug(f"Updating row {i} with values: {update_values}")
 
-                            update_stmt = (
-                                table.update()
-                                .where(
-                                    text(
-                                        " AND ".join([f"{col}=:{col}" for col in keys])
+                                update_stmt = (
+                                    table.update()
+                                    .where(
+                                        text(
+                                            " AND ".join([f"{col}=:{col}" for col in keys])
+                                        )
                                     )
+                                    .values(**update_values)
                                 )
-                                .values(**update_values)
-                            )
 
-                            update_stmt = text(str(update_stmt))
-                            conn.execute(update_stmt, values)
-                            updates += 1
-                            logger.debug(f"Row {i} updated successfully")
+                                update_stmt = text(str(update_stmt))
+                                conn.execute(update_stmt, values)
+                                updates += 1
+                                logger.debug(f"Row {i} updated successfully")
+                            else:
+                                skips += 1
+                                logger.debug(f"Row {i} skipped (already exists)")
                         else:
-                            skips += 1
-                            logger.debug(f"Row {i} skipped (already exists)")
-                    else:
-                        # Perform insert
-                        step = "perform insert"
-                        insert_stmt = table.insert().values(**values)
-                        conn.execute(insert_stmt)
-                        inserts += 1
-                        logger.debug(f"Row {i} inserted successfully")
+                            # Perform insert
+                            step = "perform insert"
+                            insert_stmt = table.insert().values(**values)
+                            conn.execute(insert_stmt)
+                            inserts += 1
+                            logger.debug(f"Row {i} inserted successfully")
 
-                    rows += 1
-                    processed_rows += 1
-                    
-                    if rows >= commit_at:
-                        conn.commit()
-                        logger.debug(f"Committed {rows} rows")
-                        rows = 0
+                        rows += 1
+                        processed_rows += 1
                         
-                    if processed_rows % 100 == 0:
-                        logger.info(f"Processed {processed_rows}/{len(dataframe)} rows")
-                        
-                except Exception as e:
-                    logger.error(f"Error processing row {i}/{total_rows}: {str(e)}")
-                    failures.append(
-                        {
-                            "step": step,
-                            "row": (
-                                i,
-                                ", ".join(
-                                    [f"{k}='{str(v)}'" for k, v in values.items()]
+                        if rows >= commit_at:
+                            conn.commit()
+                            logger.debug(f"Committed {rows} rows")
+                            rows = 0
+                            
+                        if processed_rows % 100 == 0:
+                            logger.info(f"Processed {processed_rows}/{len(dataframe)} rows")
+                            
+                    except Exception as e:
+                        logger.error(f"Error processing row {i}/{total_rows}: {str(e)}")
+                        failures.append(
+                            {
+                                "step": step,
+                                "row": (
+                                    i,
+                                    ", ".join(
+                                        [f"{k}='{str(v)}'" for k, v in values.items()]
+                                    ),
                                 ),
-                            ),
-                            "error": str(e),
-                        }
-                    )
-                    conn.rollback()
-                    continue
-            conn.commit()
-            logger.info(f"Operation completed. Total processed: {processed_rows}")
+                                "error": str(e),
+                            }
+                        )
+                        conn.rollback()
+                        continue
+                conn.commit()
+                logger.info(f"Operation completed. Total processed: {processed_rows}")
     except Exception as e:
         logger.error(f"Critical error in table operation: {str(e)}")
         conn.rollback()

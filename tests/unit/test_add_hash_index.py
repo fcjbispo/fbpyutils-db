@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from fbpyutils_db import add_hash_index
+from fbpyutils_db.hashing.hash_index import add_hash_index
 
 
 def test_add_hash_index_valid_input():

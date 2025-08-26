@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from fbpyutils_db import add_hash_column
+from fbpyutils_db.hashing.hash_column import add_hash_column
 
 
 def test_add_hash_column_valid_input():

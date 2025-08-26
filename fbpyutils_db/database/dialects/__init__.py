@@ -1,6 +1,8 @@
 from sqlalchemy.engine import Engine
 from typing import Any, Callable, Dict
 
+from fbpyutils_db import logger # Ensure logger is imported here
+
 from .sqlite import SQLiteDialect, get_sqlite_dialect_specific_query, is_sqlite
 from .postgresql import (
     PostgreSQLDialect,
@@ -14,7 +16,6 @@ from .firebird import (
     is_firebird,
 )
 
-from fbpyutils_db import logger
 from fbpyutils_db.database.dialects.base import BaseDialect
 
 def get_dialect_specific_query(engine: Engine, query_name: str, **kwargs: Any) -> str:
@@ -58,7 +59,7 @@ def get_dialect(engine: Engine) -> BaseDialect:
     Raises:
         ValueError: If the dialect is not supported.
     """
-    logger.debug(f"Getting dialect for engine '{engine.name}'")
+    logger.debug(f"Getting dialect for engine.name: '{engine.name}', engine.dialect.name: '{engine.dialect.name}'")
     if is_sqlite(engine):
         return SQLiteDialect
     elif is_postgresql(engine):
@@ -68,8 +69,9 @@ def get_dialect(engine: Engine) -> BaseDialect:
     elif is_firebird(engine):
         return FirebirdDialect
     else:
-        logger.error(f"Unsupported database dialect: {engine.name}")
-        raise ValueError(f"Unsupported database dialect: {engine.name}")
+        logger.debug(f"No specific dialect found. Falling back to error. engine.dialect.name: '{engine.dialect.name}'")
+        logger.error(f"Unsupported database dialect: {engine.dialect.name}")
+        raise ValueError(f"Unsupported database dialect: {engine.dialect.name}")
 
 
 def get_dialect_specific_type_handler(engine: Engine) -> Callable[[str], Any]:

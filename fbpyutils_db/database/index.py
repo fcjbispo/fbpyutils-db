@@ -4,7 +4,7 @@ from typing import List
 from fbpyutils_db import logger
 
 def create_index(
-    name: str, table: Selectable, keys: List[str], unique: bool = True
+    name: str, table: Selectable, keys: List[str], unique: bool = False
 ) -> Index:
     """Create an index on the specified keys for a given table.
     
@@ -12,7 +12,7 @@ def create_index(
         name (str): The name of the index to be created.
         table (sqlalchemy.sql.expression.Selectable): The table on which to create the index.
         keys (list of str): Column names that should be part of the index.
-        unique (bool, optional): Whether the index should enforce uniqueness. Default is True.
+        unique (bool, optional): Whether the index should enforce uniqueness. Default is False.
     
     Returns:
         sqlalchemy.Index: The created index object.
@@ -23,7 +23,7 @@ def create_index(
         name (str): The name of the index to be created.
         table (sqlalchemy.sql.expression.Selectable): The table on which to create the index.
         keys (list of str): A list of column names that should be part of the index.
-        unique (bool, optional): Whether the index should enforce uniqueness. Default is True.
+        unique (bool, optional): Whether the index should enforce uniqueness. Default is False.
     """
     logger.debug(f"Creating index '{name}' on columns: {keys}, unique: {unique}")
     

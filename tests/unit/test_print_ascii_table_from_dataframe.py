@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from fbpyutils_db import print_ascii_table_from_dataframe
+from fbpyutils_db.visualization.display import print_ascii_table_from_dataframe
 from io import StringIO
 import sys
 

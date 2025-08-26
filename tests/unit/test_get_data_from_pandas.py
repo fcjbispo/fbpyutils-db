@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from fbpyutils_db import get_data_from_pandas
+from fbpyutils_db.data.extract import get_data_from_pandas
 
 
 def test_get_data_from_pandas_valid_dataframe():

@@ -14,7 +14,7 @@ def normalize_columns(cols: List[str]) -> List[str]:
         list: A list of normalized column names.
 
     Raises:
-        AttributeError: If any column name contains special characters that cannot be normalized.
+        ValueError: If any column name contains only special characters.
 
     Example:
         >>> cols = ['Name!', 'Age@', '#Address']
@@ -22,12 +22,20 @@ def normalize_columns(cols: List[str]) -> List[str]:
         ['name', 'age', 'address']
     """
     logger.debug(f"Normalizing {len(cols)} column names")
-    # test if the column names contain special characters
-    if any([re.search("[^0-9a-zA-Z_]+", x) for x in cols]):
-        logger.warning(f"Column names contain special characters: {cols}")
-        raise AttributeError(
-            "Column names contain special characters that cannot be normalized."
-        )
-    normalized = [re.sub("[^0-9a-zA-Z_]+", "", x).lower() for x in cols]
+    normalized = []
+    
+    for col in cols:
+        # Remove special characters and convert to lowercase
+        normalized_col = re.sub("[^0-9a-zA-Z_]+", "", col).lower()
+        
+        # Check if the column name is empty after normalization
+        if not normalized_col:
+            logger.error(f"Column name '{col}' contains only special characters and cannot be normalized")
+            raise ValueError(
+                f"Column name '{col}' contains only special characters and cannot be normalized."
+            )
+        
+        normalized.append(normalized_col)
+    
     logger.debug(f"Successfully normalized columns: {normalized}")
     return normalized

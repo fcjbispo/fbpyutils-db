@@ -1,8 +1,5 @@
-from fbpyutils_db import normalize_columns
-
-
 import pytest
-from fbpyutils_db import normalize_columns
+from fbpyutils_db.data.normalize import normalize_columns
 
 
 def test_normalize_columns_valid_input():
@@ -11,9 +8,10 @@ def test_normalize_columns_valid_input():
     assert normalized_cols == ["name", "age", "address"]
 
 
-def test_normalize_columns_with_special_characters():
-    cols = ["Name!", "Age@", "#Address"]
-    with pytest.raises(AttributeError):
+def test_normalize_columns_raises_value_error_for_empty_normalized_names():
+    """Test that normalize_columns raises ValueError for names that become empty after normalization."""
+    cols = ["!", "@", "#"]
+    with pytest.raises(ValueError, match="Column name '.*' contains only special characters and cannot be normalized."):
         normalize_columns(cols)
 
 

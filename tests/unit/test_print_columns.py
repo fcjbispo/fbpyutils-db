@@ -1,7 +1,8 @@
 import io
 import sys
 import pytest
-from fbpyutils_db import print_columns, normalize_columns
+from fbpyutils_db.visualization.display import print_columns
+from fbpyutils_db.data.normalize import normalize_columns
 
 
 def test_print_columns_valid_input(capsys):
@@ -15,8 +16,8 @@ def test_print_columns_valid_input(capsys):
 
 def test_print_columns_normalize(capsys):
     cols = ["Name!", "Age@", "#Address"]
-    with pytest.raises(AttributeError):
-        normalize_columns(cols)
+    result = normalize_columns(cols)
+    assert result == ["name", "age", "address"]
 
 
 def test_print_columns_length(capsys):
@@ -35,5 +36,5 @@ def test_print_columns_quotes(capsys):
 
 def test_print_columns_all_options(capsys):
     cols = ["Name!", "Age@", "#Address"]
-    with pytest.raises(AttributeError):
-        normalize_columns(cols)
+    result = normalize_columns(cols)
+    assert result == ["name", "age", "address"]

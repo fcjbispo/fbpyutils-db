@@ -19,6 +19,8 @@ if url := os.getenv("DB_PG_URL"):
     db_urls_to_test.append(pytest.param(url, id="postgresql"))
 if url := os.getenv("DB_ORA_URL"):
     db_urls_to_test.append(pytest.param(url, id="oracle"))
+if url := os.getenv("DB_FDB_URL"):
+    db_urls_to_test.append(pytest.param(url, id="firebird"))
 
 # Se nenhuma URL de banco de dados for fornecida, os testes falharão.
 if not db_urls_to_test:
@@ -37,13 +39,6 @@ def db_engine(request):
     """
     db_url = request.param
     try:
-        # Inicializa o cliente Oracle se a URL for para Oracle
-        if db_url.startswith("oracle"):
-            # Extrai o diretório de configuração da URL para inicializar o cliente
-            # Isso é uma suposição, ajuste o caminho se o seu Instant Client estiver em outro lugar
-            config_dir = os.environ["DB_ORA_CONFIG_DIR"]
-            oracledb.init_oracle_client(lib_dir=config_dir)
-
         engine = create_engine(db_url)
         # Testa a conexão
         with engine.connect():
@@ -245,3 +240,4 @@ def test_table_operation_append(db_engine):
             data_final.sort_index(), 
             check_dtype=False
         )
+

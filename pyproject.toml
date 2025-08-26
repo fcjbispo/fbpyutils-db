@@ -16,6 +16,8 @@ dependencies = [
     "oracledb>=3.2.0",
     "psycopg[binary]>=3.2.9",
     "firebird-driver>=1.0.0",
+    "fdb>=2.0.4",
+    "sqlalchemy-firebird>=2.1",
 ]
 
 [build-system]
@@ -26,12 +28,14 @@ build-backend = "hatchling.build"
 dev = [
     "ipykernel>=6.29.5",
     "mock>=5.2.0",
+    "pyperclip>=1.9.0",
     "pytest>=8.3.5",
     "pytest-cov>=6.0.0",
     "pytest-databases>=0.14.0",
     "pytest-postgresql>=7.0.2",
     "python-dotenv>=1.1.1",
     "rich>=14.0.0",
+    "ruff>=0.12.9",
 ]
 
 [tool.uv.sources]

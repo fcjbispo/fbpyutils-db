@@ -1,5 +1,5 @@
 import pytest
-from fbpyutils_db import ascii_table
+from fbpyutils_db.visualization.ascii_table import ascii_table
 
 
 def test_ascii_table_empty_data():
