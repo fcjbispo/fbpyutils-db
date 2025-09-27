@@ -19,7 +19,8 @@ This project provides a collection of Python utility functions focused on databa
 - Generating ASCII table representations for display (`ascii_table`, `print_ascii_table`, `print_ascii_table_from_dataframe`).
 
 ## Version 0.3.1 - New Features
-- **Update fbpyutils to version 1.7.1**
+- **Update fbpyutils to version 1.7.2**
+- **Add comprehensive docstrings for all modules**
 
 ## Version 0.3.0 - New Features
 
