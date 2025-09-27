@@ -17,7 +17,7 @@ This project provides a collection of Python utility functions focused on databa
 - Extracting data from DataFrames (`get_data_from_pandas`).
 - Generating ASCII table representations for display (`ascii_table`, `print_ascii_table`, etc.).
 
-## Version 0.3.0 - New Features
+## Version 0.3.1 - New Features
 
 ### Enhanced Database Support
 - **Multi-dialect support**: Full support for SQLite, PostgreSQL, Oracle, and FirebirdSQL databases

@@ -18,6 +18,9 @@ This project provides a collection of Python utility functions focused on databa
 - Extracting data from DataFrames (`get_data_from_pandas`).
 - Generating ASCII table representations for display (`ascii_table`, `print_ascii_table`, `print_ascii_table_from_dataframe`).
 
+## Version 0.3.1 - New Features
+- **Update fbpyutils to version 1.7.1**
+
 ## Version 0.3.0 - New Features
 
 ### Enhanced Database Support

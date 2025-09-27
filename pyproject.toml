@@ -1,6 +1,6 @@
 [project]
 name = "fbpyutils-db"
-version = "0.3.0"
+version = "0.3.1"
 description = "Francisco Bispo's utilities for DB"
 readme = "README.md"
 authors = [
@@ -39,4 +39,4 @@ dev = [
 ]
 
 [tool.uv.sources]
-fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.6.9-py3-none-any.whl" }
+fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.1-py3-none-any.whl" }
