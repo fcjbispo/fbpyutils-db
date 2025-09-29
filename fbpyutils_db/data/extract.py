@@ -1,3 +1,16 @@
+"""Utilities for extracting data from Pandas DataFrames.
+
+This module provides functions to convert Pandas DataFrames into list-based formats suitable for database operations or other processing.
+
+Example:
+    import pandas as pd
+    from fbpyutils_db.data.extract import get_data_from_pandas
+    
+    df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
+    data, columns = get_data_from_pandas(df)
+    # data: [[1, 3], [2, 4]]
+    # columns: ['A', 'B']
+"""
 import pandas as pd
 from typing import Any, List, Tuple
 
@@ -10,20 +23,23 @@ def get_data_from_pandas(
     Extracts data and column names from a Pandas DataFrame.
 
     Args:
-        df (pandas.DataFrame): A Pandas DataFrame.
-        include_index (bool, optional): If True, includes the index column in the extracted data. Defaults to False.
+        df: The input Pandas DataFrame.
+        include_index: If True, includes the index as a column. Defaults to False.
 
     Returns:
-        tuple: A tuple containing the extracted data and column names.
+        Tuple of (data rows as list of lists, column names as list).
+
+    Raises:
+        TypeError: If input is not a Pandas DataFrame.
 
     Example:
-        >>> import pandas as pd
-        >>> df = pd.DataFrame({'Name': ['John', 'Alice', 'Bob'], 'Age': [25, 30, 40]})
-        >>> data, columns = get_data_from_pandas(df)
-        >>> print(data)
-        [['John', 25], ['Alice', 30], ['Bob', 40]]
-        >>> print(columns)
-        ['Name', 'Age']
+        import pandas as pd
+        from fbpyutils_db.data.extract import get_data_from_pandas
+        
+        df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
+        data, columns = get_data_from_pandas(df, include_index=True)
+        # data: [[0, 1, 3], [1, 2, 4]] (includes index as first column)
+        # columns: ['Index', 'A', 'B']
     """
     if not isinstance(df, pd.DataFrame):
         logger.error("Invalid input type provided, expected pandas DataFrame")

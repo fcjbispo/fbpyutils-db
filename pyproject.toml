@@ -39,4 +39,4 @@ dev = [
 ]
 
 [tool.uv.sources]
-fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.2-py3-none-any.whl" }
+fbpyutils = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.3-py3-none-any.whl" }

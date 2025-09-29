@@ -353,8 +353,8 @@ wheels = [
 
 [[package]]
 name = "fbpyutils"
-version = "1.7.2"
-source = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.2-py3-none-any.whl" }
+version = "1.7.3"
+source = { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.3-py3-none-any.whl" }
 dependencies = [
     { name = "click" },
     { name = "concurrent-log-handler" },
@@ -371,7 +371,7 @@ dependencies = [
     { name = "xlrd" },
 ]
 wheels = [
-    { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.2-py3-none-any.whl", hash = "sha256:295ae66b2691923308eb209fc1855f037e249779e4f315067744ef3387e4fac9" },
+    { url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.3-py3-none-any.whl", hash = "sha256:39d21cb20ac415ff5fe507587a97bcb30831f98998830718cf509ca59a433fe8" },
 ]
 
 [package.metadata]
@@ -424,7 +424,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fbpyutils", url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.2-py3-none-any.whl" },
+    { name = "fbpyutils", url = "https://github.com/fcjbispo/builds/raw/refs/heads/main/fbpyutils/fbpyutils-1.7.3-py3-none-any.whl" },
     { name = "fdb", specifier = ">=2.0.4" },
     { name = "firebird-driver", specifier = ">=1.0.0" },
     { name = "numpy" },

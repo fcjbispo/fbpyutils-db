@@ -1,3 +1,14 @@
+"""Utilities for normalizing column names in data processing.
+
+This module provides functions to clean and standardize column names by removing special characters and converting to lowercase, ensuring compatibility with database operations.
+
+Example:
+    from fbpyutils_db.data.normalize import normalize_columns
+    
+    cols = ['Name!', 'Age@', '#Address']
+    normalized_cols = normalize_columns(cols)
+    # normalized_cols: ['name', 'age', 'address']
+"""
 import re
 from typing import List
 
