@@ -8,31 +8,29 @@ def ascii_table(
     numrows: int = None,
 ) -> List[str]:
     """
-    Creates an ASCII table representation of the given data.
+    Generate ASCII art table from row data and optional headers.
+
+    Aligns content left/right/center, limits rows if specified.
 
     Args:
-        data (list): A list of lists representing the data rows.
-        columns (list, optional): A list of column names. Defaults to an empty list.
-        alignment (str, optional): The alignment of the table cells. Valid values are 'left', 'right', or 'center'. Defaults to 'left'.
-        numrows (int, optional): The number of rows to display. If None, all rows are displayed. Defaults to None.
+        data: List of lists for table rows.
+        columns: Optional column headers. Defaults to empty.
+        alignment: Cell alignment ('left', 'right', 'center'). Defaults to 'left'.
+        numrows: Max rows to include. Defaults to None (all).
 
     Returns:
-        list: A list of strings representing the ASCII table.
+        List[str]: Lines of ASCII table.
+
+    Raises:
+        ValueError: For mismatched columns or invalid alignment.
 
     Example:
-        >>> data = [['John', 25, 'USA'], ['Alice', 30, 'Canada'], ['Bob', 40, 'UK']]
+        >>> data = [['John', 25, 'USA'], ['Alice', 30, 'Canada']]
         >>> columns = ['Name', 'Age', 'Country']
-        >>> table = ascii_table(data, columns=columns, alignment='center')
-        >>> for line in table:
-        ...     print(line)
-        +-------+-----+---------+
-        |  Name | Age | Country |
-        +-------+-----+---------+
-        |  John |  25 |   USA   |
-        | Alice |  30 |  Canada |
-        |  Bob  |  40 |    UK   |
-        +-------+-----+---------+
-
+        >>> table = ascii_table(data, columns, 'center', numrows=2)
+        >>> table[3]  # Header row
+        '|  Name | Age | Country |'
+        # Produces bordered table with centered content, first 2 rows.
     """
     logger.debug(f"Creating ASCII table with {len(data)} rows, {len(columns)} columns")
     logger.debug(f"Alignment: {alignment}, numrows: {numrows}")
@@ -126,28 +124,30 @@ def print_ascii_table(
     numrows: int = None,
 ) -> None:
     """
-    Prints the ASCII table representation of the given data.
+    Print ASCII table generated from data and headers.
+
+    Calls ascii_table internally and prints each line.
 
     Args:
-        data (list): A list of lists representing the data rows.
-        columns (list, optional): A list of column names. Defaults to an empty list.
-        alignment (str, optional): The alignment of the table cells. Valid values are 'left', 'right', or 'center'. Defaults to 'left'.
+        data: List of lists for rows.
+        columns: Optional headers. Defaults to empty.
+        alignment: Alignment ('left', 'right', 'center'). Defaults to 'left'.
+        numrows: Max rows. Defaults to None.
 
     Returns:
         None
 
     Example:
-        >>> data = [['John', 25, 'USA'], ['Alice', 30, 'Canada'], ['Bob', 40, 'UK']]
+        >>> data = [['John', 25, 'USA'], ['Alice', 30, 'Canada']]
         >>> columns = ['Name', 'Age', 'Country']
-        >>> print_ascii_table(data, columns=columns, alignment='center')
-        +-------+-----+---------+
-        |  Name | Age | Country |
-        +-------+-----+---------+
-        |  John |  25 |   USA   |
-        | Alice |  30 |  Canada |
-        |  Bob  |  40 |    UK   |
-        +-------+-----+---------+
-
+        >>> print_ascii_table(data, columns, 'left', 2)
+        +------+-----+--------+
+        |Name  |Age  |Country |
+        +------+-----+--------+
+        |John  |25   |USA     |
+        |Alice |30   |Canada  |
+        +------+-----+--------+
+        # Prints left-aligned table with 2 rows.
     """
     if data is None:
         return None

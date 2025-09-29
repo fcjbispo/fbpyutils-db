@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-This module provides a specific implementation for the Firebird database dialect.
-It includes methods for creating tables, indexes, and other database objects,
-as well as handling data types and other Firebird-specific features.
+Firebird database dialect implementation.
+
+Provides Firebird-specific constraint creation and query handling.
 """
 
 from __future__ import annotations
@@ -19,25 +19,29 @@ from fbpyutils_db import logger
 
 class FirebirdDialect(BaseDialect):
     """
-    A class to represent the Firebird database dialect.
+    Firebird-specific dialect for constraint and query operations.
 
-    This class provides the specific implementation for creating tables,
-    indexes, and other database objects in Firebird. It also handles
-    data types and other Firebird-specific features.
+    Implements foreign key and constraint creation with Firebird requirements.
     """
 
     def create_foreign_key(self, **kwargs: Any) -> Any:
         """
-        Creates a foreign key constraint for FirebirdSQL.
-        
+        Create a foreign key constraint for Firebird.
+
+        Requires explicit 'name' parameter.
+
         Args:
-            **kwargs: Arbitrary keyword arguments for foreign key creation.
-                Must include 'columns' (list of column names),
-                'refcolumns' (list of referenced column names),
-                and optionally 'name' (constraint name).
-        
+            **kwargs: Includes 'columns', 'refcolumns', 'name' (required).
+
         Returns:
-            Any: The foreign key constraint object.
+            ForeignKeyConstraint: SQLAlchemy foreign key object.
+
+        Raises:
+            ValueError: If 'name' is missing.
+
+        Example:
+            >>> fk = dialect.create_foreign_key(columns=['user_id'], refcolumns=['id'], name='fk_users_user')
+            # Creates named foreign key from user_id to id.
         """
         # Firebird requires explicit name for foreign key constraints
         if 'name' not in kwargs:
@@ -52,7 +56,20 @@ class FirebirdDialect(BaseDialect):
 
     def create_constraint(self, **kwargs: Any) -> Any:
         """
-        Creates a constraint.
+        Create check or unique constraint for Firebird.
+
+        Args:
+            **kwargs: Includes 'type' ('check' or 'unique') and params like 'columns', 'sqltext'.
+
+        Returns:
+            Constraint: CheckConstraint or UniqueConstraint.
+
+        Raises:
+            ValueError: For unsupported type.
+
+        Example:
+            >>> check = dialect.create_constraint(type='check', sqltext='age > 0', name='check_age')
+            # Creates check constraint enforcing age > 0.
         """
         constraint_type = kwargs.pop("type", None)
         if constraint_type == "check":
@@ -65,13 +82,22 @@ class FirebirdDialect(BaseDialect):
 
 def is_firebird(engine: Engine) -> bool:
     """
-    Checks if the given SQLAlchemy engine is a Firebird engine.
+    Detect if the engine uses Firebird dialect.
+
+    Checks engine.name and engine.dialect.name for 'firebird'.
 
     Args:
-        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine.
+        engine: SQLAlchemy engine.
 
     Returns:
-        bool: True if the engine is Firebird, False otherwise.
+        bool: True if Firebird, else False.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('firebird://user:pass@host/db')
+        >>> is_firebird(engine)
+        True
+        # Returns True for Firebird connection.
     """
     logger.debug(f"Checking if engine is Firebird. engine.name: '{engine.name}', engine.dialect.name: '{engine.dialect.name}'")
     return any(["firebird" in e for e in [engine.dialect.name, engine.name]])
@@ -79,8 +105,26 @@ def is_firebird(engine: Engine) -> bool:
 
 def get_firebird_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """
-    Returns a Firebird-specific SQL query based on the query name.
-    This is a placeholder and will raise NotImplementedError for now.
+    Generate Firebird-specific SQL query.
+
+    Currently raises NotImplementedError for all queries.
+
+    Args:
+        query_name: Query identifier (e.g., 'upsert').
+        **kwargs: Formatting parameters.
+
+    Returns:
+        str: Firebird SQL query (placeholder).
+
+    Raises:
+        NotImplementedError: For any query_name.
+
+    Example:
+        >>> get_firebird_dialect_specific_query('upsert', table_name='users')
+        Traceback (most recent call last):
+         ...
+        NotImplementedError: Firebird-specific query 'upsert' is not yet implemented.
+        # Raises error as implementation pending.
     """
     raise NotImplementedError(
         f"Firebird-specific query '{query_name}' is not yet implemented."

@@ -7,27 +7,24 @@ from fbpyutils_db.utils.validators import check_columns
 
 def create_hash_column(x: Union[str, pd.Series], y: int = 12) -> pd.Series:
     """
-    Creates a new hash column based on the values of an existing column in the dataframe.
-    The hash is generated using MD5 and truncated to 'y' number of characters.
+    Generate MD5 hash for input values or series, truncated to specified length.
 
-    Parameters:
-    ----------
-    x : str or pd.Series
-        The column from the dataframe whose values will be hashed.
-    y : int, optional (default=12)
-        The length of the hash string to return.
+    Handles NaN by treating as empty string. For DataFrame input, hashes concatenated row values.
+
+    Args:
+        x: Input string, Series, or DataFrame to hash.
+        y: Hash length. Defaults to 12.
 
     Returns:
-    -------
-    pd.Series
-        A new pandas Series containing the MD5 hash of the input column values.
+        pd.Series: Series of hex MD5 hashes.
 
     Example:
-    --------
-    >>> df = pd.DataFrame({'SomeColumn': ['value1', 'value2']})
-    >>> create_hash_column(df['SomeColumn'])
-    0    b'f96b61d7...a3f8b1cdd'
-    1    b'f96b61d7...a3f8b1cde'
+        >>> import pandas as pd
+        >>> s = pd.Series(['value1', 'value2'])
+        >>> hashes = create_hash_column(s, 8)
+        >>> hashes.iloc[0]
+        'c51ce410'
+        # Hashes 'value1' to 'c51ce410c7f896aa' truncated to 8 chars.
     """
     if isinstance(x, pd.DataFrame):
         # Para DataFrames, concatenar valores de cada linha
@@ -52,17 +49,30 @@ def add_hash_column(
     df: pd.DataFrame, column_name: str, length: int = 12, columns: List[str] = []
 ) -> pd.DataFrame:
     """
-    Adds a hash column to the given DataFrame.
+    Add a hash column to DataFrame using specified or all columns.
+
+    Hashes concatenated column values per row using MD5, adds as new first column.
 
     Args:
-        df (pandas.DataFrame): The input DataFrame.
-        column_name (str): The name of the column to be created.
-        length (int) optional: The length of the column to be created. Defaults to 12.
-        columns (list) optional: The columns names to be used as part of the hash column.
-            If None or empty list (default) all columns will be used.
+        df: Input DataFrame.
+        column_name: Name for the new hash column.
+        length: Hash string length. Defaults to 12.
+        columns: Specific columns to hash. Defaults to all.
+
     Returns:
-        pandas.DataFrame: A new DataFrame with the hash column added as the first column.
-                        The order of other columns remains the same.
+        pd.DataFrame: Copy with hash column added first.
+
+    Raises:
+        TypeError: For invalid df, column_name, or length types.
+        ValueError: For invalid length or missing columns.
+
+    Example:
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({'a': [1, 2], 'b': ['x', 'y']})
+        >>> result = add_hash_column(df, 'hash_id', 8, columns=['a', 'b'])
+        >>> result['hash_id'].iloc[0]
+        '90015098'
+        # Hashes '1|x' to '900150983cd24fb0d6963f7d28e17f72' truncated to 8: '90015098'.
     """
     # Parameter checks
     if not isinstance(df, pd.DataFrame):

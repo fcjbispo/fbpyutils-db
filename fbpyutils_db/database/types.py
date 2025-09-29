@@ -9,29 +9,25 @@ def get_columns_types(
     dataframe: pd.DataFrame, primary_keys: List[str] = []
 ) -> List[Column]:
     """
-    Returns a list of Column objects representing the columns of the given dataframe.
+    Generate SQLAlchemy Column objects from a DataFrame's columns, marking primary keys.
+
+    Infers SQLAlchemy types based on Pandas dtypes and applies primary key constraints.
+
     Args:
-        dataframe (pandas.DataFrame): The input dataframe for which column types are to be determined.
-        primary_keys (List[str]): Optional list of primary key column names.
+        dataframe: Input DataFrame to derive column definitions from.
+        primary_keys: List of column names to set as primary keys. Defaults to empty list.
+
     Returns:
-        list: A list of Column objects, where each object represents a column in the dataframe.
-    Raises:
-        None.
+        List[Column]: List of SQLAlchemy Column objects for table creation.
+
     Example:
-        >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
-        >>> get_columns_types(df)
-        [Column('A', 'int64'), Column('B', 'object')]
-    Column object:
-        - The Column object represents a column in a dataframe and stores its name and type.
-        Attributes:
-            name (str): The name of the column.
-            dtype (str): The data type of the column.
-        Example:
-            >>> col = Column('A', 'int64')
-            >>> col.name
-            'A'
-            >>> col.dtype
-            'int64'
+        >>> import pandas as pd
+        >>> from sqlalchemy import Column
+        >>> df = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        >>> columns = get_columns_types(df, primary_keys=['id'])
+        >>> isinstance(columns[0], Column) and columns[0].primary_key
+        True
+        # Creates columns with 'id' as primary key (Integer) and 'name' as String.
     """
     logger.debug(f"Getting column types for DataFrame with {len(dataframe.columns)} columns")
     logger.debug(f"Primary keys: {primary_keys}")
@@ -55,15 +51,23 @@ def get_columns_types(
 
 def get_column_type(dtype: str) -> TypeEngine:
     """
-    Map Pandas data types to SQLAlchemy data types.
+    Convert Pandas dtype to corresponding SQLAlchemy TypeEngine.
+
+    Maps common Pandas types to SQLAlchemy equivalents. Defaults to String(4000) for unknowns.
 
     Args:
-        dtype (dtype): The Pandas data type to be mapped.
+        dtype: Pandas dtype string (e.g., 'int64', 'object').
 
     Returns:
-        sqlalchemy.sql.sqltypes.TypeEngine: The corresponding SQLAlchemy data type.
-        For string columns, a default 4000 chars lenght column is created.
+        TypeEngine: SQLAlchemy type instance.
 
+    Example:
+        >>> from sqlalchemy.sql.sqltypes import Integer, String
+        >>> get_column_type('int64')
+        Integer()
+        >>> get_column_type('object')
+        String(4000)
+        # Maps integer to Integer() and string/object to String(4000).
     """
     logger.debug(f"Mapping pandas dtype '{dtype}' to SQLAlchemy type")
     

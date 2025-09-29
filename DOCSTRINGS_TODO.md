@@ -69,29 +69,29 @@ Revise all Python modules and scripts in the fbpyutils_db project to add or upda
 ### Database Module
 - [✅] fbpyutils_db/database/__init__.py
 - [✅] fbpyutils_db/database/index.py
-- [ ] fbpyutils_db/database/operations.py
-- [ ] fbpyutils_db/database/table.py
-- [ ] fbpyutils_db/database/types.py
+- [✅] fbpyutils_db/database/operations.py
+- [✅] fbpyutils_db/database/table.py
+- [✅] fbpyutils_db/database/types.py
 
 ### Database Dialects
-- [ ] fbpyutils_db/database/dialects/__init__.py
-- [ ] fbpyutils_db/database/dialects/base.py
-- [ ] fbpyutils_db/database/dialects/firebird.py
-- [ ] fbpyutils_db/database/dialects/oracle.py
-- [ ] fbpyutils_db/database/dialects/postgresql.py
-- [ ] fbpyutils_db/database/dialects/sqlite.py
+- [✅] fbpyutils_db/database/dialects/__init__.py
+- [✅] fbpyutils_db/database/dialects/base.py
+- [✅] fbpyutils_db/database/dialects/firebird.py
+- [✅] fbpyutils_db/database/dialects/oracle.py
+- [✅] fbpyutils_db/database/dialects/postgresql.py
+- [✅] fbpyutils_db/database/dialects/sqlite.py
 
 ### Hashing Module
-- [ ] fbpyutils_db/hashing/__init__.py
-- [ ] fbpyutils_db/hashing/hash_column.py
-- [ ] fbpyutils_db/hashing/hash_index.py
+- [✅] fbpyutils_db/hashing/__init__.py
+- [✅] fbpyutils_db/hashing/hash_column.py
+- [✅] fbpyutils_db/hashing/hash_index.py
 
 ### Utils Module
-- [ ] fbpyutils_db/utils/__init__.py
-- [ ] fbpyutils_db/utils/nan_handler.py
-- [ ] fbpyutils_db/utils/validators.py
+- [✅] fbpyutils_db/utils/__init__.py
+- [✅] fbpyutils_db/utils/nan_handler.py
+- [✅] fbpyutils_db/utils/validators.py
 
 ### Visualization Module
-- [ ] fbpyutils_db/visualization/__init__.py
-- [ ] fbpyutils_db/visualization/ascii_table.py
-- [ ] fbpyutils_db/visualization/display.py
+- [✅] fbpyutils_db/visualization/__init__.py
+- [✅] fbpyutils_db/visualization/ascii_table.py
+- [✅] fbpyutils_db/visualization/display.py

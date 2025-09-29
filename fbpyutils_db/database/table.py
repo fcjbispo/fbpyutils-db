@@ -21,20 +21,35 @@ def create_table(
     metadata: MetaData = None,
 ) -> None:
     """
-    Create a table in the database using the provided pandas DataFrame as a schema.
+    Create a database table from a DataFrame schema, optionally with indexes, foreign keys, and constraints.
+
+    Infers column types from the DataFrame and creates the table structure. Supports primary keys,
+    standard/unique indexes, and dialect-specific constraints.
 
     Args:
-        dataframe (pd.DataFrame): The pandas DataFrame containing the schema information.
-        table_name (str): The name of the table to be created.
-        schema (str, optional): The name of the schema to be created. Default is None.
-        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine engine.
-        keys (list of str, optional): List of column names to use as keys for index creation. Default is None.
-        index (str, optional): Whether to create an index and what kind using the keys. Default is None (not create index).
-            If an index muste be created, index be in 'standard' or 'unique'.
-        foreign_keys (list of dict, optional): List of foreign keys to be created. Default is None.
-        constraints (list of dict, optional): List of constraints to be created. Default is None.
-        metadata (MetaData, optional): SQLAlchemy MetaData object to use. If None, a new one will be created.
+        dataframe: Pandas DataFrame defining the table schema.
+        engine: SQLAlchemy database engine.
+        table_name: Name of the table to create.
+        schema: Optional schema name.
+        keys: List of primary key column names.
+        index: Index type on keys ('standard', 'unique', or 'primary'). Defaults to None.
+        foreign_keys: List of foreign key definitions as dicts.
+        constraints: List of constraint definitions as dicts.
+        metadata: Optional SQLAlchemy MetaData object.
 
+    Returns:
+        None
+
+    Raises:
+        ValueError: For invalid DataFrame, keys, or index type.
+
+    Example:
+        >>> import pandas as pd
+        >>> from sqlalchemy import create_engine
+        >>> df = pd.DataFrame({'id': [1], 'name': ['Test']})
+        >>> engine = create_engine('sqlite:///:memory:')
+        >>> create_table(df, engine, 'test_table', keys=['id'], index='primary')
+        # Creates 'test_table' with 'id' as primary key.
     """
     logger.info(f"Creating table '{table_name}' in schema '{schema}'")
 

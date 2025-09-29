@@ -1,3 +1,8 @@
+"""
+SQLite database dialect implementation.
+
+Handles SQLite-specific constraints, foreign key enabling, and upsert queries using ON CONFLICT.
+"""
 from sqlalchemy.engine import Engine
 from typing import Any, Dict
 
@@ -12,15 +17,23 @@ from sqlalchemy.engine import Engine
 
 class SQLiteDialect(BaseDialect):
     """
-    A class to represent the SQLite database dialect.
+    SQLite-specific dialect for constraints and queries.
+
+    Optionally enables foreign keys via environment variable.
     """
 
     def __init__(self, connection: Any):
         """
-        Initializes the SQLiteDialect.
+        Initialize SQLite dialect, enabling foreign keys if configured.
 
         Args:
-            connection: The database connection object.
+            connection: Database connection object.
+
+        Example:
+            >>> os.environ['FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON'] = 'true'
+            >>> with engine.connect() as conn:
+            ...     dialect = SQLiteDialect(conn)
+            # Enables PRAGMA foreign_keys=ON for the connection.
         """
         super().__init__(connection)
         if os.getenv("FBPYUTILS_DB_SQLITE_FOREIGN_KEYS_ON", "false").lower() == "true":
@@ -28,19 +41,53 @@ class SQLiteDialect(BaseDialect):
 
     def _fk_pragma_on(self, dbapi_con, con_record):
         """
-        Enables foreign key support in SQLite.
+        Enable foreign key enforcement in SQLite connection.
+
+        Executes PRAGMA foreign_keys=ON.
+
+        Args:
+            dbapi_con: SQLite DB-API connection.
+            con_record: SQLAlchemy connection record.
+
+        Example:
+            >>> # Called internally on connect event
+            # dbapi_con.execute("pragma foreign_keys=ON")
+            # Enables FK checks for the session.
         """
         dbapi_con.execute("pragma foreign_keys=ON")
 
     def create_foreign_key(self, **kwargs: Any) -> Any:
         """
-        Creates a foreign key constraint.
+        Create a foreign key constraint for SQLite.
+
+        Args:
+            **kwargs: Parameters like 'columns', 'refcolumns'.
+
+        Returns:
+            ForeignKeyConstraint: SQLAlchemy foreign key object.
+
+        Example:
+            >>> fk = dialect.create_foreign_key(columns=['user_id'], refcolumns=['id'], name='fk_users')
+            # Creates foreign key from user_id to id (enforced if FK enabled).
         """
         return ForeignKeyConstraint(**kwargs)
 
     def create_constraint(self, **kwargs: Any) -> Any:
         """
-        Creates a constraint.
+        Create check or unique constraint for SQLite.
+
+        Args:
+            **kwargs: Includes 'type' ('check' or 'unique') and params.
+
+        Returns:
+            Constraint: CheckConstraint or UniqueConstraint.
+
+        Raises:
+            ValueError: For unsupported type.
+
+        Example:
+            >>> check = dialect.create_constraint(type='check', sqltext='age > 0', name='check_age')
+            # Creates check constraint for age > 0.
         """
         constraint_type = kwargs.pop("type", None)
         if constraint_type == "check":
@@ -53,17 +100,23 @@ class SQLiteDialect(BaseDialect):
 
 def get_sqlite_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """
-    Returns SQLite-specific SQL queries based on the query name.
+    Generate SQLite-specific SQL query, e.g., INSERT ... ON CONFLICT for upsert.
 
     Args:
-        query_name (str): The name of the query to retrieve.
-        **kwargs: Arbitrary keyword arguments for query formatting.
+        query_name: Query identifier (e.g., 'upsert').
+        **kwargs: Formatting params like 'table_name', 'columns', 'keys'.
 
     Returns:
-        str: The SQLite-specific SQL query.
+        str: Formatted SQLite SQL.
 
     Raises:
-        ValueError: If an unknown query name is provided.
+        ValueError: For unknown query_name.
+
+    Example:
+        >>> query = get_sqlite_dialect_specific_query('upsert', table_name='users', columns='id,name', values='?,?', keys='id', updates='name = excluded.name')
+        >>> print(query)
+        INSERT INTO users (id,name) VALUES (?,?,) ON CONFLICT(id) DO UPDATE SET name = excluded.name
+        # Generates SQLite upsert query with conflict on id (note: uses ? placeholders).
     """
     logger.debug(f"Getting SQLite dialect specific query for '{query_name}' with kwargs: {kwargs}")
     queries = {
@@ -83,6 +136,19 @@ def get_sqlite_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
 
 def is_sqlite(engine: Engine) -> bool:
     """
-    Checks if the given SQLAlchemy engine is for SQLite.
+    Detect if the engine uses SQLite dialect.
+
+    Args:
+        engine: SQLAlchemy engine.
+
+    Returns:
+        bool: True if SQLite, else False.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('sqlite:///:memory:')
+        >>> is_sqlite(engine)
+        True
+        # Returns True for in-memory SQLite.
     """
     return engine.name == 'sqlite'

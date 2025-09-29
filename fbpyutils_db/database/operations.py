@@ -22,25 +22,40 @@ def table_operation(
     max_workers: int = None,
 ) -> Dict[str, Any]:
     """
-    Perform upsert or replace operation on a table based on the provided dataframe.
+    Perform append, upsert, or replace operation on a database table using a DataFrame.
+
+    This function handles data insertion, updating existing rows based on keys, or replacing
+    the entire table content. It creates the table if it does not exist and optionally
+    creates indexes.
 
     Args:
-        operation (str, optional): The operation to be performed ('append', 'upsert' or 'replace').
-        dataframe (pd.DataFrame): The pandas DataFrame containing the data to be inserted or updated.
-        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine engine.
-        table_name (str): The name of the table to operate on.
-        schema (str, optional): the schena name to preffix the table objects.
-        keys (list of str, required for operation=upsert): List of column names to use as keys for upsert operation.
-        index (str, optional): Whether to create an index and what kind using the keys. Default is None (not create index).
-            If an index must be created, index be in 'standard' or 'unique'.
-        commit_at (int, optional): Number of rows to commit in the database at once. Defaults to 50.
-            Must be > 1 and < total rows of the dataframe.
-        parallel (bool, optional): Whether to process rows in parallel using multiple workers. Defaults to False.
-            NOTE: Parallel processing is currently disabled due to SQLAlchemy connection issues.
+        operation: The operation type ('append', 'upsert', or 'replace').
+        dataframe: Pandas DataFrame with data to insert or update.
+        engine: SQLAlchemy database engine.
+        table_name: Name of the target table.
+        schema: Optional schema name to prefix the table.
+        keys: List of column names for upsert keys (required for 'upsert').
+        index: Index type to create on keys ('standard', 'unique', or 'primary'). Defaults to None.
+        commit_at: Rows to commit in batches. Defaults to 50.
+        parallel: Enable parallel processing. Defaults to False.
+        max_workers: Number of parallel workers. Defaults to None (auto-detected).
 
     Returns:
-        dict: A dictionary containing information about the performed operation.
+        Dict[str, Any]: Summary with 'operation', 'table_name', 'insertions', 'updates',
+        'skips', and 'failures'.
 
+    Raises:
+        ValueError: For invalid operation, DataFrame type, missing keys, or invalid parameters.
+
+    Example:
+        >>> import pandas as pd
+        >>> from sqlalchemy import create_engine
+        >>> df = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        >>> engine = create_engine('sqlite:///:memory:')
+        >>> result = table_operation('upsert', df, engine, 'users', keys=['id'])
+        >>> print(result['insertions'])
+        2
+        # Inserts 2 new rows into 'users' table.
     """
     logger.info(f"Starting table operation: {operation}")
     logger.debug(f"Table: {table_name}, Schema: {schema}")

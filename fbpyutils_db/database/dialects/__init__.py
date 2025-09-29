@@ -20,18 +20,28 @@ from fbpyutils_db.database.dialects.base import BaseDialect
 
 def get_dialect_specific_query(engine: Engine, query_name: str, **kwargs: Any) -> str:
     """
-    Returns a dialect-specific SQL query based on the provided SQLAlchemy engine.
+    Retrieve a SQL query tailored to the database dialect of the engine.
+
+    Routes to dialect-specific query generators based on engine type.
 
     Args:
-        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine.
-        query_name (str): The name of the query to retrieve (e.g., "upsert").
-        **kwargs: Arbitrary keyword arguments for query formatting.
+        engine: SQLAlchemy engine to detect dialect from.
+        query_name: Name of the query (e.g., 'upsert').
+        **kwargs: Parameters for query formatting.
 
     Returns:
-        str: The dialect-specific SQL query.
+        str: Formatted dialect-specific SQL query.
 
     Raises:
-        ValueError: If the dialect is not supported or the query name is unknown.
+        ValueError: For unsupported dialect or unknown query_name.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('sqlite:///:memory:')
+        >>> query = get_dialect_specific_query(engine, 'upsert', table_name='users', columns='id,name', values=':id,:name')
+        >>> print(query)
+        INSERT INTO users (id,name) VALUES (:id,:name) ON CONFLICT(id) DO UPDATE SET name = excluded.name
+        # Returns SQLite upsert query for 'users' table.
     """
     logger.debug(f"Getting dialect specific query for engine '{engine.name}', query '{query_name}'")
     if is_sqlite(engine):
@@ -48,16 +58,26 @@ def get_dialect_specific_query(engine: Engine, query_name: str, **kwargs: Any) -
 
 def get_dialect(engine: Engine) -> BaseDialect:
     """
-    Returns a dialect-specific class based on the provided SQLAlchemy engine.
+    Return the appropriate dialect class for the engine's database type.
+
+    Supports SQLite, PostgreSQL, Oracle, and Firebird.
 
     Args:
-        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine.
+        engine: SQLAlchemy engine to identify dialect for.
 
     Returns:
-        BaseDialect: The dialect-specific class.
+        Type[BaseDialect]: Dialect class for the engine.
 
     Raises:
-        ValueError: If the dialect is not supported.
+        ValueError: For unsupported database dialect.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('postgresql://user:pass@localhost/db')
+        >>> dialect_class = get_dialect(engine)
+        >>> isinstance(dialect_class, type)
+        True
+        # Returns PostgreSQLDialect class for PostgreSQL engine.
     """
     logger.debug(f"Getting dialect for engine.name: '{engine.name}', engine.dialect.name: '{engine.dialect.name}'")
     if is_sqlite(engine):
@@ -76,8 +96,23 @@ def get_dialect(engine: Engine) -> BaseDialect:
 
 def get_dialect_specific_type_handler(engine: Engine) -> Callable[[str], Any]:
     """
-    Returns a function to handle dialect-specific type conversions.
-    (Placeholder for future implementation)
+    Return a handler function for dialect-specific type conversions.
+
+    Currently a placeholder returning a default handler that logs warnings.
+
+    Args:
+        engine: SQLAlchemy engine to base handler on.
+
+    Returns:
+        Callable[[str], Any]: Function mapping dtype strings to types.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('sqlite:///:memory:')
+        >>> handler = get_dialect_specific_type_handler(engine)
+        >>> result = handler('int64')
+        'int64'
+        # Logs warning and returns original dtype as placeholder.
     """
     logger.debug(f"Getting dialect specific type handler for engine '{engine.name}'")
     # Esta função pode ser expandida para retornar um handler de tipos específico

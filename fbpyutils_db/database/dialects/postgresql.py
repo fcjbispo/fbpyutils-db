@@ -1,3 +1,8 @@
+"""
+PostgreSQL database dialect implementation.
+
+Handles PostgreSQL-specific constraints and upsert queries using ON CONFLICT.
+"""
 from sqlalchemy.engine import Engine
 from typing import Any, Dict
 
@@ -8,18 +13,43 @@ from fbpyutils_db.database.dialects.base import BaseDialect
 
 class PostgreSQLDialect(BaseDialect):
     """
-    A class to represent the PostgreSQL database dialect.
+    PostgreSQL-specific dialect for constraints and queries.
+
+    Uses standard constraints with ON CONFLICT for upserts.
     """
 
     def create_foreign_key(self, **kwargs: Any) -> Any:
         """
-        Creates a foreign key constraint.
+        Create a foreign key constraint for PostgreSQL.
+
+        Args:
+            **kwargs: Parameters like 'columns', 'refcolumns'.
+
+        Returns:
+            ForeignKeyConstraint: SQLAlchemy foreign key object.
+
+        Example:
+            >>> fk = dialect.create_foreign_key(columns=['user_id'], refcolumns=['id'], name='fk_users')
+            # Creates foreign key from user_id to id.
         """
         return ForeignKeyConstraint(**kwargs)
 
     def create_constraint(self, **kwargs: Any) -> Any:
         """
-        Creates a constraint.
+        Create check or unique constraint for PostgreSQL.
+
+        Args:
+            **kwargs: Includes 'type' ('check' or 'unique') and params.
+
+        Returns:
+            Constraint: CheckConstraint or UniqueConstraint.
+
+        Raises:
+            ValueError: For unsupported type.
+
+        Example:
+            >>> check = dialect.create_constraint(type='check', sqltext='age > 0', name='check_age')
+            # Creates check constraint for age > 0.
         """
         constraint_type = kwargs.pop("type", None)
         if constraint_type == "check":
@@ -32,17 +62,23 @@ class PostgreSQLDialect(BaseDialect):
 
 def get_postgresql_dialect_specific_query(query_name: str, **kwargs: Any) -> str:
     """
-    Returns PostgreSQL-specific SQL queries based on the query name.
+    Generate PostgreSQL-specific SQL query, e.g., INSERT ... ON CONFLICT for upsert.
 
     Args:
-        query_name (str): The name of the query to retrieve.
-        **kwargs: Arbitrary keyword arguments for query formatting.
+        query_name: Query identifier (e.g., 'upsert').
+        **kwargs: Formatting params like 'table_name', 'columns', 'keys'.
 
     Returns:
-        str: The PostgreSQL-specific SQL query.
+        str: Formatted PostgreSQL SQL.
 
     Raises:
-        ValueError: If an unknown query name is provided.
+        ValueError: For unknown query_name.
+
+    Example:
+        >>> query = get_postgresql_dialect_specific_query('upsert', table_name='users', columns='id,name', values=':id,:name', keys='id', updates='name = excluded.name')
+        >>> print(query)
+        INSERT INTO users (id,name) VALUES (:id,:name) ON CONFLICT (id) DO UPDATE SET name = excluded.name
+        # Generates PostgreSQL upsert query with conflict on id.
     """
     logger.debug(f"Getting PostgreSQL dialect specific query for '{query_name}' with kwargs: {kwargs}")
     queries = {
@@ -62,6 +98,19 @@ def get_postgresql_dialect_specific_query(query_name: str, **kwargs: Any) -> str
 
 def is_postgresql(engine: Engine) -> bool:
     """
-    Checks if the given SQLAlchemy engine is for PostgreSQL.
+    Detect if the engine uses PostgreSQL dialect.
+
+    Args:
+        engine: SQLAlchemy engine.
+
+    Returns:
+        bool: True if PostgreSQL, else False.
+
+    Example:
+        >>> from sqlalchemy import create_engine
+        >>> engine = create_engine('postgresql://user:pass@localhost/db')
+        >>> is_postgresql(engine)
+        True
+        # Returns True for PostgreSQL connection.
     """
     return engine.name == 'postgresql'

@@ -1,3 +1,8 @@
+"""
+Visualization utilities for printing DataFrame tables and column lists.
+
+Supports ASCII table output from DataFrames and formatted column printing.
+"""
 import pandas as pd
 import re
 from typing import Any, List
@@ -12,29 +17,31 @@ from fbpyutils_db.data.normalize import normalize_columns
 
 def print_ascii_table_from_dataframe(df: pd.DataFrame, alignment: str = "left") -> None:
     """
-    Prints the ASCII table representation of a pandas DataFrame.
-    - Attempts to extract the data and column names from the pandas DataFrame using a helper function.
-    - Raises a ValueError if the DataFrame is invalid.
+    Print ASCII table from DataFrame by extracting data and headers.
+
+    Uses get_data_from_pandas to convert DataFrame to list format.
 
     Args:
-        df (pandas.DataFrame): A pandas DataFrame.
-        alignment (str, optional): The alignment of the table cells. Valid values are 'left', 'right', or 'center'. Defaults to 'left'.
+        df: Input pandas DataFrame.
+        alignment: Cell alignment ('left', 'right', 'center'). Defaults to 'left'.
 
     Returns:
         None
 
+    Raises:
+        ValueError: If DataFrame extraction fails.
+
     Example:
         >>> import pandas as pd
-        >>> df = pd.DataFrame({'Name': ['John', 'Alice', 'Bob'], 'Age': [25, 30, 40], 'Country': ['USA', 'Canada', 'UK']})
-        >>> print_ascii_table_from_dataframe(df, alignment='center')
-        +-------+-----+---------+
-        |  Name | Age | Country |
-        +-------+-----+---------+
-        |  John |  25 |   USA   |
-        | Alice |  30 |  Canada |
-        |  Bob  |  40 |    UK   |
-        +-------+-----+---------+
-
+        >>> df = pd.DataFrame({'Name': ['John', 'Alice'], 'Age': [25, 30]})
+        >>> print_ascii_table_from_dataframe(df, 'center')
+        +-------+-----+
+        | Name  | Age |
+        +-------+-----+
+        | John  |  25 |
+        | Alice |  30 |
+        +-------+-----+
+        # Prints centered ASCII table from DataFrame.
     """
     data, columns = None, None
     try:
@@ -56,13 +63,15 @@ def print_columns(
     cols: List[str], normalize: bool = False, length: int = None, quotes: bool = False
 ) -> None:
     """
-    Prints a formatted string representation of a list of columns.
+    Print formatted list of column names, optionally normalized and padded.
+
+    Normalizes to lowercase if specified, adds quotes, pads to max length.
 
     Args:
-        cols (list): A list of column names.
-        normalize (bool, optional): If True, normalizes the columns before printing. Defaults to False.
-        length (int, optional): The desired length for each column. If not provided, the length will be determined automatically. Defaults to None.
-        quotes (bool, optional): If True, adds single quotes around each column name. Defaults to False.
+        cols: List of column names.
+        normalize: Convert to lowercase. Defaults to False.
+        length: Pad width. Defaults to max column length.
+        quotes: Enclose in single quotes. Defaults to False.
 
     Returns:
         None
@@ -71,6 +80,7 @@ def print_columns(
         >>> cols = ['Name', 'Age', 'Address']
         >>> print_columns(cols, normalize=True, length=10, quotes=True)
         'name     ', 'age      ', 'address  '
+        # Prints quoted, normalized, left-padded columns.
     """
     logger.debug(f"Printing {len(cols)} columns with options: normalize={normalize}, length={length}, quotes={quotes}")
     

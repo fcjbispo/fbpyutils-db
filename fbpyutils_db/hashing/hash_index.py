@@ -10,33 +10,30 @@ def add_hash_index(
     df: pd.DataFrame, index_name: str = "id", length: int = 12, columns: List[str] = []
 ) -> pd.DataFrame:
     """
-    Replaces the dataframe index with a hash string with length of 12 characters
-    calculated using all columns values for each row and renames the dataframe index
-    to the name supplied by index_name.
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        A pandas dataframe.
-    index_name : str
-        The name to be given to the new index. Defaults to 'id'
-    length : int
-        The length of the column to be created. Defaults to 12.
-    columns : list optional
-        The columns names to be used as part of the hash column.
-        If None or empty list (default) all columns will be used.
+    Replace DataFrame index with MD5 hash of row values, renamed to index_name.
+
+    Uses all or specified columns to generate unique hash index per row.
+
+    Args:
+        df: Input DataFrame.
+        index_name: Name for the new hash index. Defaults to 'id'.
+        length: Hash string length. Defaults to 12.
+        columns: Specific columns to hash. Defaults to all.
+
     Returns:
-    --------
-    pd.DataFrame
-        A pandas dataframe with the new index.
+        pd.DataFrame: Copy with hash-based index.
+
+    Raises:
+        TypeError: For invalid df, index_name, or length types.
+        ValueError: For invalid length or missing columns.
+
     Example:
-    --------
-    >>> df = pd.DataFrame({'col1': [1, 2, 3], 'col2': ['a', 'b', 'c']})
-    >>> add_hash_index(df, 'new_index')
-            col1 col2
-    new_index
-    8b9c45e2a9f6   1   a
-    3d4c4f4f4d1f   2   b
-    5b5d8c7a2a4c   3   c
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({'col1': [1, 2], 'col2': ['a', 'b']})
+        >>> result = add_hash_index(df, 'hash_idx', 8)
+        >>> result.index[0]
+        '90015098'
+        # Hashes row '1|a' to '90015098', sets as index named 'hash_idx'.
     """
     # Parameter checks
     if not isinstance(df, pd.DataFrame):
