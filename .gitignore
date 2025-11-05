@@ -14,3 +14,4 @@ logs/app.log.*
 **/*.ipynb
 /.crush
 **/.comment
+**/.sandbox
